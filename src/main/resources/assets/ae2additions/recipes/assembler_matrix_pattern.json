@@ -1,0 +1,30 @@
+{
+  "type": "ae2:crystal_assembler",
+  "input_items": [
+    {
+      "ingredient": {
+        "item": "ae2additions:assembler_matrix_wall"
+      }
+    },
+    {
+      "ingredient": {
+        "item": "ae2:pattern_provider"
+      }
+    },
+    {
+      "amount": 6,
+      "ingredient": {
+        "item": "ae2:blue_lumen_paint_ball"
+      }
+    },
+    {
+      "ingredient": {
+        "item": "ae2:engineering_processor"
+      }
+    }
+  ],
+  "output": {
+    "item": "ae2additions:assembler_matrix_pattern",
+    "count": 1
+  }
+}

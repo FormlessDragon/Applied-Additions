@@ -195,6 +195,7 @@ jar {
             if (use_access_transformer.toBoolean()) {
                 attribute_map['FMLAT'] = access_transformer_locations
             }
+            attribute_map['MixinConfigs'] = 'ae2additions.mixins.json'
             attributes(attribute_map)
         }
     }

@@ -1,0 +1,21 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "item": "ae2:crafting_unit"
+    },
+    {
+      "item": "ae2:singularity"
+    },
+    {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    {
+      "item": "ae2:quantum_entangled_singularity"
+    }
+  ],
+  "result": {
+    "item": "ae2additions:quantum_unit",
+    "count": 1
+  }
+}

@@ -3,6 +3,8 @@
 !src/**/build/
 run/
 out/
+sources
+plan
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -24,4 +26,5 @@ gradle-app.setting
 
 # IDEA config
 .idea
+
 

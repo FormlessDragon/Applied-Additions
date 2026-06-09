@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "formed=false,powered=false": {
+      "model": "ae2additions:assembler_matrix/crafter"
+    },
+    "formed=false,powered=true": {
+      "model": "ae2additions:assembler_matrix/crafter"
+    },
+    "formed=true,powered=false": {
+      "model": "ae2additions:assembler_matrix/crafter"
+    },
+    "formed=true,powered=true": {
+      "model": "ae2additions:assembler_matrix/crafter"
+    }
+  }
+}

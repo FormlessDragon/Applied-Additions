@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.formlesslab.ae2additions.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "target": "@env(MOD)",
+  "refmap": "ae2additions.refmap.json",
+  "mixins": [
+    "MixinCraftingService"
+  ],
+  "client": []
+}

@@ -1,0 +1,26 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "SSS",
+    "AUA",
+    "ACA"
+  ],
+  "key": {
+    "A": {
+      "item": "ae2additions:quantum_accelerator"
+    },
+    "C": {
+      "item": "ae2additions:quantum_core"
+    },
+    "S": {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    "U": {
+      "item": "ae2additions:quantum_unit"
+    }
+  },
+  "result": {
+    "item": "ae2additions:quantum_multi_threader",
+    "count": 1
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "SES",
+    "AUT",
+    "SES"
+  ],
+  "key": {
+    "A": {
+      "item": "ae2additions:quantum_accelerator"
+    },
+    "E": {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    "S": {
+      "item": "ae2:singularity"
+    },
+    "T": {
+      "item": "ae2additions:quantum_storage_256"
+    },
+    "U": {
+      "item": "ae2additions:quantum_unit"
+    }
+  },
+  "result": {
+    "item": "ae2additions:quantum_core",
+    "count": 1
+  }
+}

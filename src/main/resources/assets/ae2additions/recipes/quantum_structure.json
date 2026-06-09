@@ -1,0 +1,20 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "QSQ",
+    "S S",
+    "QSQ"
+  ],
+  "key": {
+    "Q": {
+      "item": "ae2:quartz_glass"
+    },
+    "S": {
+      "item": "ae2:sky_stone_block"
+    }
+  },
+  "result": {
+    "item": "ae2additions:quantum_structure",
+    "count": 1
+  }
+}

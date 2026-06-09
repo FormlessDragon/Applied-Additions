@@ -1,0 +1,23 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "ECE",
+    "CUC",
+    "ECE"
+  ],
+  "key": {
+    "C": {
+      "item": "ae2:256k_crafting_storage"
+    },
+    "E": {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    "U": {
+      "item": "ae2additions:quantum_unit"
+    }
+  },
+  "result": {
+    "item": "ae2additions:quantum_storage_128",
+    "count": 1
+  }
+}

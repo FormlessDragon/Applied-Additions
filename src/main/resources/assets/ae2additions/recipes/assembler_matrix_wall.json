@@ -1,0 +1,39 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "BFB",
+    "IQI",
+    "BFB"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "F": {
+      "type": "forge:ore_dict",
+      "ore": "gemFluix"
+    },
+    "I": {
+      "type": "forge:ore_dict",
+      "ore": "ingotInfusedEntro"
+    },
+    "Q": [
+      {
+        "item": "minecraft:quartz_block",
+        "data": 1
+      },
+      {
+        "item": "minecraft:quartz_block",
+        "data": 0
+      },
+      {
+        "item": "minecraft:quartz_block",
+        "data": 2
+      }
+    ]
+  },
+  "result": {
+    "item": "ae2additions:assembler_matrix_wall",
+    "count": 2
+  }
+}

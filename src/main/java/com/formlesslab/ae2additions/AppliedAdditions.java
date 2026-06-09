@@ -3,6 +3,7 @@ package com.formlesslab.ae2additions;
 import com.formlesslab.ae2additions.init.ModConfig;
 import com.formlesslab.ae2additions.init.ModContent;
 import com.formlesslab.ae2additions.init.ModUpgrades;
+import com.formlesslab.ae2additions.network.ModNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -30,8 +31,10 @@ public class AppliedAdditions {
     public void preInit(FMLPreInitializationEvent event) {
         ModConfig.init(event.getSuggestedConfigurationFile());
         ModContent.registerTileEntities();
+        ModNetwork.init();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            com.formlesslab.ae2additions.assembler.client.model.AssemblerGlassModel.register();
             MinecraftForge.EVENT_BUS.register(com.formlesslab.ae2additions.client.render.WirelessHighlightHandler.INSTANCE);
         }
         LOGGER.info("{} initialized", Reference.MOD_NAME);

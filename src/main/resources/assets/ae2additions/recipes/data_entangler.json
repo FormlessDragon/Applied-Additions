@@ -1,0 +1,26 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [
+    "QQQ",
+    "SUS",
+    "SCS"
+  ],
+  "key": {
+    "C": {
+      "item": "ae2additions:quantum_core"
+    },
+    "Q": {
+      "item": "ae2additions:quantum_storage_256"
+    },
+    "S": {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    "U": {
+      "item": "ae2additions:quantum_unit"
+    }
+  },
+  "result": {
+    "item": "ae2additions:data_entangler",
+    "count": 1
+  }
+}

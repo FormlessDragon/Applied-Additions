@@ -1,0 +1,21 @@
+{
+  "type": "forge:ore_shapeless",
+  "ingredients": [
+    {
+      "item": "ae2:quantum_entangled_singularity"
+    },
+    {
+      "item": "ae2additions:quantum_storage_128"
+    },
+    {
+      "item": "ae2additions:quantum_storage_128"
+    },
+    {
+      "item": "ae2additions:quantum_unit"
+    }
+  ],
+  "result": {
+    "item": "ae2additions:quantum_storage_256",
+    "count": 1
+  }
+}

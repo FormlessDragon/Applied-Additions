@@ -54,7 +54,6 @@ echo location of your Java installation. 1>&2
 goto fail
 
 :findJavaFromJavaHome
-’
 set JAVA_EXE=%JAVA_HOME%/bin/java.exe
 
 if exist "%JAVA_EXE%" goto execute

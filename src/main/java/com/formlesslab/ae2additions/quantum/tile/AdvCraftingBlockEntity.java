@@ -2,11 +2,9 @@ package com.formlesslab.ae2additions.quantum.tile;
 
 import ae2.api.implementations.IPowerChannelState;
 import ae2.api.networking.GridFlags;
-import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridMultiblock;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.IGridNodeListener;
-import ae2.api.networking.events.GridCraftingCpuChange;
 import ae2.api.orientation.BlockOrientation;
 import ae2.api.util.AECableType;
 import ae2.api.util.IConfigManager;
@@ -15,7 +13,6 @@ import ae2.block.crafting.AbstractCraftingUnitBlock;
 import ae2.block.crafting.ICraftingUnitType;
 import ae2.core.definitions.AEBlocks;
 import ae2.crafting.inv.ListCraftingInventory;
-import ae2.me.cluster.MBCalculator;
 import ae2.me.cluster.implementations.CraftingCPUCluster;
 import ae2.tile.crafting.ICraftingCPUTileEntity;
 import ae2.tile.grid.AENetworkedTile;
@@ -24,11 +21,10 @@ import ae2.util.Platform;
 import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.ModGuiHandler;
 import com.formlesslab.ae2additions.quantum.AAECraftingUnitType;
-import com.formlesslab.ae2additions.quantum.QuantumContent;
 import com.formlesslab.ae2additions.quantum.block.AAECraftingUnitBlock;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCalculator;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCluster;
-import com.formlesslab.ae2additions.quantum.client.QuantumComputerHost;
+import com.formlesslab.ae2additions.quantum.client.gui.QuantumComputerHost;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.EnumSet;
@@ -42,7 +38,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
@@ -428,8 +423,12 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         if (this.world == null) {
             return connections;
         }
+        AAECraftingUnitType ownType = this.getQuantumUnitType();
         for (EnumFacing side : EnumFacing.values()) {
-            if (this.world.getBlockState(this.pos.offset(side)).getBlock() instanceof AAECraftingUnitBlock) {
+            Block block = this.world.getBlockState(this.pos.offset(side)).getBlock();
+            if (block instanceof AAECraftingUnitBlock quantumBlock
+                && quantumBlock.type instanceof AAECraftingUnitType neighborType
+                && ownType.isBoundaryOnly() == neighborType.isBoundaryOnly()) {
                 connections.add(side);
             }
         }

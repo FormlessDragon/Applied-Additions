@@ -1,10 +1,9 @@
-package com.formlesslab.ae2additions.quantum.client;
+package com.formlesslab.ae2additions.quantum.client.gui;
 
 import ae2.api.client.AEKeyRendering;
 import ae2.api.stacks.AEItemKey;
 import ae2.api.stacks.AEKey;
 import ae2.client.gui.Icon;
-import ae2.client.gui.style.Blitter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.item.Item;

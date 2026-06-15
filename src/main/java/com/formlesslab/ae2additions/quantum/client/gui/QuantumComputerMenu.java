@@ -1,10 +1,9 @@
-package com.formlesslab.ae2additions.quantum.client;
+package com.formlesslab.ae2additions.quantum.client.gui;
 
 import ae2.api.config.CpuSelectionMode;
 import ae2.api.config.Settings;
 import ae2.api.networking.crafting.CraftingJobStatus;
 import ae2.api.networking.crafting.ICraftingCPU;
-import ae2.api.stacks.GenericStack;
 import ae2.container.guisync.GuiSync;
 import ae2.container.implementations.ContainerCraftingCPU;
 import ae2.container.implementations.ContainerCraftingStatus.CraftingCpuList;
@@ -29,7 +28,7 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
         .thenComparing(e -> e.name() != null ? e.name().getFormattedText() : "")
         .thenComparingInt(CraftingCpuListEntry::serial);
 
-    private final WeakHashMap<ICraftingCPU, Integer> cpuSerialMap = new WeakHashMap<>();
+    private WeakHashMap<ICraftingCPU, Integer> cpuSerialMap;
     private final QuantumComputerHost host;
 
     @GuiSync(8)
@@ -114,7 +113,7 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
         }
 
         if (this.selectedCpuSerial == -1 && !this.cpuList.cpus().isEmpty()) {
-            selectCpu(this.cpuList.cpus().get(0).serial());
+            selectCpu(this.cpuList.cpus().getFirst().serial());
         }
     }
 
@@ -142,6 +141,9 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
     }
 
     private int getOrAssignCpuSerial(ICraftingCPU cpu) {
+        if (this.cpuSerialMap == null) {
+            this.cpuSerialMap = new WeakHashMap<>();
+        }
         return this.cpuSerialMap.computeIfAbsent(cpu, ignored -> this.nextCpuSerial++);
     }
 
@@ -162,14 +164,15 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
     public void selectCpu(int serial) {
         if (this.isClientSide()) {
             this.selectedCpuSerial = serial;
-            this.sendClientAction(ACTION_SELECT_CPU, Integer.valueOf(serial));
+            this.sendClientAction(ACTION_SELECT_CPU, serial);
             return;
         }
 
         ICraftingCPU newSelectedCpu = null;
         if (serial != -1) {
+            WeakHashMap<ICraftingCPU, Integer> serialMap = this.cpuSerialMap;
             for (ICraftingCPU cpu : this.lastCpuSet) {
-                if (this.cpuSerialMap.getOrDefault(cpu, -1) == serial) {
+                if (serialMap != null && serialMap.getOrDefault(cpu, -1) == serial) {
                     newSelectedCpu = cpu;
                     break;
                 }
@@ -184,7 +187,7 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
     public void cycleSelectionMode(boolean backwards) {
         if (this.isClientSide()) {
             this.selectionMode = rotateSelectionMode(this.selectionMode, backwards);
-            this.sendClientAction(ACTION_CYCLE_SELECTION_MODE, Integer.valueOf(backwards ? -1 : 1));
+            this.sendClientAction(ACTION_CYCLE_SELECTION_MODE, backwards ? -1 : 1);
             return;
         }
 

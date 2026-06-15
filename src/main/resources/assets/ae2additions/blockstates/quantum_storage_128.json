@@ -7,10 +7,10 @@
       "model": "ae2additions:quantum_crafting/quantum_storage_128"
     },
     "formed=true,powered=false": {
-      "model": "ae2additions:quantum_crafting/quantum_storage_128"
+      "model": "ae2additions:quantum_crafting/quantum_storage_128_formed"
     },
     "formed=true,powered=true": {
-      "model": "ae2additions:quantum_crafting/quantum_storage_128"
+      "model": "ae2additions:quantum_crafting/quantum_storage_128_formed"
     }
   }
 }

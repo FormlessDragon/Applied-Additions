@@ -16,6 +16,10 @@ repositories {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
     }
+    maven {
+        name = "GeckoLib"
+        url = uri("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/")
+    }
     mavenCentral()
     mavenLocal() // Must be last for caching to work
 }
@@ -58,5 +62,6 @@ dependencies {
 
     modImplementation name: 'AppliedEnergistics2-Supergiant', version: '0.0.0', classifier: 'dev'
     compileOnly 'curse.maven:mouse-tweaks-unofficial-461660:5876158'
+    modImplementation 'software.bernie.geckolib:geckolib-forge-1.12.2:3.0.31'
 
 }

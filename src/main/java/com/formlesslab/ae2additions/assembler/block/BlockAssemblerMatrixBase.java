@@ -84,8 +84,7 @@ public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
                                     EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
         M tile = this.getTileEntity(world, pos);
-        if (tile != null && tile.isFormed() && !player.isSneaking()
-            && this.openAssemblerMatrixGui(world, pos, player)) {
+        if (tile != null && tile.isFormed() && !player.isSneaking() && this.openAssemblerMatrixGui(world, pos, player)) {
             return true;
         }
         return super.onBlockActivated(world, pos, state, player, hand, side, hitX, hitY, hitZ);

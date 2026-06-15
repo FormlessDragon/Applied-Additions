@@ -35,6 +35,7 @@ public class AppliedAdditions {
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
             com.formlesslab.ae2additions.assembler.client.model.AssemblerGlassModel.register();
+            MinecraftForge.EVENT_BUS.register(com.formlesslab.ae2additions.quantum.client.QuantumComputerModelOverride.INSTANCE);
             MinecraftForge.EVENT_BUS.register(com.formlesslab.ae2additions.client.render.WirelessHighlightHandler.INSTANCE);
         }
         LOGGER.info("{} initialized", Reference.MOD_NAME);

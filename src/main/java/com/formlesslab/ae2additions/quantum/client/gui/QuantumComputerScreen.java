@@ -1,4 +1,4 @@
-package com.formlesslab.ae2additions.quantum.client;
+package com.formlesslab.ae2additions.quantum.client.gui;
 
 import ae2.api.config.CpuSelectionMode;
 import ae2.api.config.Settings;

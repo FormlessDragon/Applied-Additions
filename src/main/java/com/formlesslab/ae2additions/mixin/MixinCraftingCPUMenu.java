@@ -14,9 +14,9 @@ import ae2.core.network.clientbound.CraftingStatusPacket;
 import ae2.core.network.clientbound.CraftingSupplierLocationsPacket;
 import ae2.crafting.execution.CraftingSupplierLocation;
 import ae2.me.cluster.implementations.CraftingCPUCluster;
-import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPU;
-import com.formlesslab.ae2additions.quantum.logic.AdvCraftingCPULogic;
-import com.formlesslab.ae2additions.quantum.tile.AdvCraftingBlockEntity;
+import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPU;
+import com.formlesslab.ae2additions.me.logic.AdvCraftingCPULogic;
+import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -73,7 +73,7 @@ public abstract class MixinCraftingCPUMenu extends AEBaseContainer {
 
     @Inject(method = "<init>(Lnet/minecraft/entity/player/InventoryPlayer;Ljava/lang/Object;)V", at = @At("TAIL"))
     private void ae2additions$selectInitialQuantumCpu(InventoryPlayer playerInventory, Object host, CallbackInfo ci) {
-        if (!(host instanceof AdvCraftingBlockEntity quantumTile) || quantumTile.getCluster() == null) {
+        if (!(host instanceof TileAdvCraftingBlock quantumTile) || quantumTile.getCluster() == null) {
             return;
         }
 

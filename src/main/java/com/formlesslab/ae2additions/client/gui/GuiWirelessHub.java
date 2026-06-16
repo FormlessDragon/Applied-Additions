@@ -11,7 +11,7 @@ import com.formlesslab.ae2additions.Reference;
 import com.formlesslab.ae2additions.client.render.WirelessHighlightHandler;
 import com.formlesslab.ae2additions.container.ContainerWirelessHub;
 import com.formlesslab.ae2additions.tile.TileWirelessHub;
-import com.formlesslab.ae2additions.wireless.WirelessStatus;
+import com.formlesslab.ae2additions.api.WirelessStatus;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;

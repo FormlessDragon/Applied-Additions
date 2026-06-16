@@ -1,12 +1,11 @@
 package com.formlesslab.ae2additions.mixin;
 
-import ae2.client.gui.WidgetContainer;
 import ae2.client.gui.me.crafting.GuiCraftingCPU;
 import ae2.client.gui.me.crafting.GuiCraftingStatus;
 import ae2.client.gui.style.GuiStyle;
 import ae2.client.gui.widgets.Scrollbar;
 import ae2.container.implementations.ContainerCraftingStatus;
-import com.formlesslab.ae2additions.client.gui.GroupedCPUSelectionList;
+import com.formlesslab.ae2additions.client.gui.widgets.GroupedCPUSelectionList;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.text.ITextComponent;
 import org.spongepowered.asm.mixin.Mixin;

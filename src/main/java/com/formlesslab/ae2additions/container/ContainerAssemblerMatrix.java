@@ -8,12 +8,14 @@ import ae2.api.inventories.InternalInventory;
 import ae2.container.AEBaseContainer;
 import ae2.container.guisync.GuiSync;
 import ae2.helpers.InventoryAction;
-import com.formlesslab.ae2additions.assembler.client.gui.AssemblerMatrixMenu;
-import com.formlesslab.ae2additions.assembler.me.ClusterAssemblerMatrix;
-import com.formlesslab.ae2additions.assembler.network.AssemblerMatrixServerActionHost;
-import com.formlesslab.ae2additions.assembler.network.SAssemblerMatrixUpdate;
-import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixBase;
-import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixPattern;
+import com.formlesslab.ae2additions.api.AssemblerMatrixMenu;
+import com.formlesslab.ae2additions.me.cluster.ClusterAssemblerMatrix;
+import com.formlesslab.ae2additions.api.AssemblerMatrixServerActionHost;
+import com.formlesslab.ae2additions.network.SAssemblerMatrixUpdate;
+import com.formlesslab.ae2additions.network.CAssemblerMatrixCancel;
+import com.formlesslab.ae2additions.network.CAssemblerMatrixPatternMode;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixPattern;
 import com.formlesslab.ae2additions.network.ModNetwork;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -94,7 +96,7 @@ public class ContainerAssemblerMatrix extends AEBaseContainer
     public void requestCancel() {
         if (this.isClientSide()) {
             com.formlesslab.ae2additions.network.ModNetwork.sendToServer(
-                new com.formlesslab.ae2additions.assembler.network.CAssemblerMatrixCancel());
+                new CAssemblerMatrixCancel());
         } else {
             this.cancelAssemblerMatrixJobs();
         }
@@ -104,7 +106,7 @@ public class ContainerAssemblerMatrix extends AEBaseContainer
     public void requestPatternMode(boolean hide) {
         if (this.isClientSide()) {
             com.formlesslab.ae2additions.network.ModNetwork.sendToServer(
-                new com.formlesslab.ae2additions.assembler.network.CAssemblerMatrixPatternMode(hide));
+                new CAssemblerMatrixPatternMode(hide));
         } else {
             this.setAssemblerMatrixPatternMode(hide);
         }

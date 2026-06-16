@@ -6,6 +6,7 @@ import ae2.api.networking.IGridConnection;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.security.IActionHost;
 import com.formlesslab.ae2additions.AppliedAdditions;
+import com.formlesslab.ae2additions.api.WirelessNode;
 import com.formlesslab.ae2additions.init.ModConfig;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

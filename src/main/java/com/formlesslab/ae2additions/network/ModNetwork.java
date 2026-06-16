@@ -29,11 +29,11 @@ public final class ModNetwork {
         // TODO quantum worker: register packet class for QUANTUM_TASK_CANCEL.
         // TODO quantum worker: register packet class for QUANTUM_CPU_SELECTION.
         registerClientbound(ASSEMBLER_MATRIX_UPDATE,
-            com.formlesslab.ae2additions.assembler.network.SAssemblerMatrixUpdate.class);
+            SAssemblerMatrixUpdate.class);
         registerServerbound(ASSEMBLER_MATRIX_CANCEL,
-            com.formlesslab.ae2additions.assembler.network.CAssemblerMatrixCancel.class);
+            CAssemblerMatrixCancel.class);
         registerServerbound(ASSEMBLER_MATRIX_PATTERN_MODE,
-            com.formlesslab.ae2additions.assembler.network.CAssemblerMatrixPatternMode.class);
+            CAssemblerMatrixPatternMode.class);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

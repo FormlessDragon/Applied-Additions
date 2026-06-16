@@ -1,5 +1,7 @@
 package com.formlesslab.ae2additions.wireless;
 
+import com.formlesslab.ae2additions.api.WirelessEndpoint;
+import com.formlesslab.ae2additions.api.WirelessFail;
 import com.formlesslab.ae2additions.init.ModConfig;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;

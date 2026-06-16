@@ -6,11 +6,13 @@ import ae2.container.implementations.UpgradeableContainer;
 import ae2.me.helpers.IGridConnectedTile;
 import com.formlesslab.ae2additions.tile.TileWirelessConnector;
 import com.formlesslab.ae2additions.tile.TileWirelessHub;
-import com.formlesslab.ae2additions.wireless.WirelessStatus;
+import com.formlesslab.ae2additions.api.WirelessStatus;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Arrays;
 
 public class ContainerWirelessHub extends UpgradeableContainer<TileWirelessHub> {
     private static final String ACTION_DISCONNECT_PORT = "disconnectPort";
@@ -48,7 +50,7 @@ public class ContainerWirelessHub extends UpgradeableContainer<TileWirelessHub> 
 
     public void disconnectPort(int port) {
         if (this.isClientSide()) {
-            this.sendClientAction(ACTION_DISCONNECT_PORT, Integer.valueOf(port));
+            this.sendClientAction(ACTION_DISCONNECT_PORT, port);
         } else {
             this.getHost().killPort(port);
         }
@@ -62,22 +64,8 @@ public class ContainerWirelessHub extends UpgradeableContainer<TileWirelessHub> 
         private final int[] remoteZ = new int[TileWirelessHub.MAX_PORTS];
         private final int[] remoteChannels = new int[TileWirelessHub.MAX_PORTS];
 
-        public PortState(ByteBuf data) {
-            for (int i = 0; i < TileWirelessHub.MAX_PORTS; i++) {
-                int ordinal = data.readByte();
-                this.statuses[i] = WirelessStatus.values()[ordinal];
-                this.hasRemote[i] = data.readBoolean();
-                this.remoteX[i] = data.readInt();
-                this.remoteY[i] = data.readInt();
-                this.remoteZ[i] = data.readInt();
-                this.remoteChannels[i] = data.readInt();
-            }
-        }
-
         private PortState() {
-            for (int i = 0; i < TileWirelessHub.MAX_PORTS; i++) {
-                this.statuses[i] = WirelessStatus.UNCONNECTED;
-            }
+            Arrays.fill(this.statuses, WirelessStatus.UNCONNECTED);
         }
 
         public static PortState empty() {

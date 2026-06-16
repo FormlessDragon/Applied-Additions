@@ -1,16 +1,16 @@
 package com.formlesslab.ae2additions;
 
 import ae2.client.gui.style.GuiStyleManager;
-import com.formlesslab.ae2additions.assembler.client.gui.GuiAssemblerMatrix;
-import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixBase;
+import com.formlesslab.ae2additions.client.gui.GuiAssemblerMatrix;
+import com.formlesslab.ae2additions.client.gui.GuiQuantumComputer;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.client.gui.GuiWirelessConnector;
 import com.formlesslab.ae2additions.client.gui.GuiWirelessHub;
 import com.formlesslab.ae2additions.container.ContainerAssemblerMatrix;
 import com.formlesslab.ae2additions.container.ContainerWirelessConnector;
 import com.formlesslab.ae2additions.container.ContainerWirelessHub;
-import com.formlesslab.ae2additions.quantum.client.gui.QuantumComputerMenu;
-import com.formlesslab.ae2additions.quantum.client.gui.QuantumComputerScreen;
-import com.formlesslab.ae2additions.quantum.tile.AdvCraftingBlockEntity;
+import com.formlesslab.ae2additions.container.ContainerQuantumComputer;
+import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
 import com.formlesslab.ae2additions.tile.TileWirelessConnector;
 import com.formlesslab.ae2additions.tile.TileWirelessHub;
 import net.minecraft.entity.player.EntityPlayer;
@@ -37,19 +37,19 @@ public class ModGuiHandler implements IGuiHandler {
         registerGui(
             WIRELESS_CONNECTOR,
             TileWirelessConnector.class,
-            (player, world, pos, connector) -> new ContainerWirelessConnector(player.inventory, connector));
+            (player, _, _, connector) -> new ContainerWirelessConnector(player.inventory, connector));
         registerGui(
             WIRELESS_HUB,
             TileWirelessHub.class,
-            (player, world, pos, hub) -> new ContainerWirelessHub(player.inventory, hub));
+            (player, _, _, hub) -> new ContainerWirelessHub(player.inventory, hub));
         registerGui(
             QUANTUM_COMPUTER,
-            AdvCraftingBlockEntity.class,
-            (player, world, pos, quantum) -> new QuantumComputerMenu(player.inventory, quantum));
+            TileAdvCraftingBlock.class,
+            (player, _, _, quantum) -> new ContainerQuantumComputer(player.inventory, quantum));
         registerGui(
             ASSEMBLER_MATRIX,
             TileAssemblerMatrixBase.class,
-            (player, world, pos, matrix) -> new ContainerAssemblerMatrix(player.inventory, matrix));
+            (player, _, _, matrix) -> new ContainerAssemblerMatrix(player.inventory, matrix));
     }
 
     public static <T extends TileEntity> void registerGui(int id, Class<T> tileClass,
@@ -103,29 +103,29 @@ public class ModGuiHandler implements IGuiHandler {
         registerClientGui(
             WIRELESS_CONNECTOR,
             TileWirelessConnector.class,
-            (player, world, pos, connector) -> new GuiWirelessConnector(
+            (player, _, _, connector) -> new GuiWirelessConnector(
                 new ContainerWirelessConnector(player.inventory, connector),
                 player.inventory,
                 GuiStyleManager.loadStyleDoc("/screens/wireless_connector.json")));
         registerClientGui(
             WIRELESS_HUB,
             TileWirelessHub.class,
-            (player, world, pos, hub) -> new GuiWirelessHub(
+            (player, _, _, hub) -> new GuiWirelessHub(
                 new ContainerWirelessHub(player.inventory, hub),
                 player.inventory,
                 GuiStyleManager.loadStyleDoc("/screens/wireless_hub.json")));
         registerClientGui(
             QUANTUM_COMPUTER,
-            AdvCraftingBlockEntity.class,
-            (player, world, pos, quantum) -> new QuantumComputerScreen(
-                new QuantumComputerMenu(player.inventory, quantum),
+            TileAdvCraftingBlock.class,
+            (player, _, _, quantum) -> new GuiQuantumComputer(
+                new ContainerQuantumComputer(player.inventory, quantum),
                 player.inventory,
                 quantum.getDisplayName(),
                 GuiStyleManager.loadStyleDoc("/screens/quantum_computer.json")));
         registerClientGui(
             ASSEMBLER_MATRIX,
             TileAssemblerMatrixBase.class,
-            (player, world, pos, matrix) -> new GuiAssemblerMatrix<>(
+            (player, _, _, matrix) -> new GuiAssemblerMatrix<>(
                 new ContainerAssemblerMatrix(player.inventory, matrix),
                 player.inventory,
                 GuiAssemblerMatrix.loadStyle()));

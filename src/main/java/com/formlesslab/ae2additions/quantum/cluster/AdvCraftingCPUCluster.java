@@ -6,7 +6,6 @@ import ae2.api.config.Settings;
 import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.crafting.CraftingJobStatus;
-import ae2.api.networking.crafting.ICraftingCPU;
 import ae2.api.networking.crafting.ICraftingPlan;
 import ae2.api.networking.crafting.ICraftingRequester;
 import ae2.api.networking.crafting.ICraftingSubmitResult;
@@ -14,7 +13,6 @@ import ae2.api.networking.events.GridCraftingCpuChange;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.stacks.AEKey;
 import ae2.api.stacks.GenericStack;
-import ae2.crafting.CraftingLink;
 import ae2.crafting.execution.CraftingSubmitResult;
 import ae2.crafting.inv.ListCraftingInventory;
 import ae2.me.cluster.MBCalculator;
@@ -32,7 +30,6 @@ import java.util.UUID;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
@@ -70,7 +67,7 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
 
         tile.setCoreBlock(false);
         tile.saveChanges();
-        this.quantumBlockEntities.add(0, tile);
+        this.quantumBlockEntities.addFirst(tile);
         super.addTileEntity(tile);
 
         if (tile.getStorageMultiplier() > 0) {
@@ -206,7 +203,7 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
     @Override
     public CraftingJobStatus getJobStatus() {
         List<AdvCraftingCPU> active = this.getActiveCPUs();
-        return active.isEmpty() ? null : active.get(0).getJobStatus();
+        return active.isEmpty() ? null : active.getFirst().getJobStatus();
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.formlesslab.ae2additions.assembler.me;
 import ae2.api.config.Setting;
 import ae2.api.crafting.IPatternDetails;
 import ae2.api.networking.IGridNode;
-import ae2.api.networking.security.IActionHost;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.stacks.KeyCounter;
 import ae2.api.util.IConfigManager;
@@ -15,7 +14,6 @@ import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixCrafter;
 import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixFunction;
 import com.formlesslab.ae2additions.assembler.tile.TileAssemblerMatrixPattern;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -127,7 +125,7 @@ public class ClusterAssemblerMatrix implements IAECluster {
     public void done() {
         TileAssemblerMatrixBase core = this.getCore();
         if (core == null && !this.tiles.isEmpty()) {
-            core = this.tiles.get(0);
+            core = this.tiles.getFirst();
             this.machineSrc = new MachineSource(core);
         }
         if (core == null) {
@@ -202,13 +200,13 @@ public class ClusterAssemblerMatrix implements IAECluster {
         StringBuilder name = new StringBuilder();
         for (TileAssemblerMatrixBase tile : this.tiles) {
             if (tile.hasCustomName()) {
-                if (name.length() > 0) {
+                if (!name.isEmpty()) {
                     name.append(' ');
                 }
                 name.append(tile.getCustomName());
             }
         }
-        this.myName = name.length() > 0 ? new TextComponentString(name.toString()) : null;
+        this.myName = !name.isEmpty() ? new TextComponentString(name.toString()) : null;
     }
 
     public void addTileEntity(TileAssemblerMatrixBase tile) {

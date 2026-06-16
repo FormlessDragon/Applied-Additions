@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 public class AdvCpuSelectionList implements ICompositeWidget {
-    private static final int DEFAULT_ROWS = 6;
 
     private final Blitter background;
     private final Blitter buttonBg;
@@ -41,10 +40,6 @@ public class AdvCpuSelectionList implements ICompositeWidget {
     private final IntSupplier visibleRowsSupplier;
 
     private Rectangle bounds = new Rectangle(0, 0, 0, 0);
-
-    public AdvCpuSelectionList(QuantumComputerMenu menu, Scrollbar scrollbar, GuiStyle style) {
-        this(menu, scrollbar, style, () -> DEFAULT_ROWS);
-    }
 
     public AdvCpuSelectionList(QuantumComputerMenu menu, Scrollbar scrollbar, GuiStyle style, IntSupplier visibleRowsSupplier) {
         this.menu = menu;

@@ -50,19 +50,11 @@ public final class QuantumComputerConnect {
             return -1;
         }
 
-        switch (face) {
-            case WEST:
-            case EAST:
-                return this.getIndexX(face, corner);
-            case DOWN:
-            case UP:
-                return this.getIndexY(face, corner);
-            case NORTH:
-            case SOUTH:
-                return this.getIndexZ(face, corner);
-            default:
-                return -1;
-        }
+        return switch (face) {
+            case WEST, EAST -> this.getIndexX(face, corner);
+            case DOWN, UP -> this.getIndexY(face, corner);
+            case NORTH, SOUTH -> this.getIndexZ(face, corner);
+        };
     }
 
     private void set(int x, int y, int z) {

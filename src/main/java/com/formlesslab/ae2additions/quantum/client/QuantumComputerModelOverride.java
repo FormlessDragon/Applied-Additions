@@ -9,6 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
@@ -34,7 +35,7 @@ public final class QuantumComputerModelOverride {
         for (AAECraftingUnitType type : AAECraftingUnitType.values()) {
             IBakedModel model = new AAECraftingUnitModelProvider(type).bake(
                 DefaultVertexFormats.BLOCK,
-                event.getModelLoader().defaultTextureGetter());
+                ModelLoader.defaultTextureGetter());
             putFormedVariant(registry, type.getRegistryName(), false, model);
             putFormedVariant(registry, type.getRegistryName(), true, model);
         }

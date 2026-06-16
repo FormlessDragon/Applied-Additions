@@ -87,11 +87,6 @@ public abstract class MixinCraftingCPUMenu extends AEBaseContainer {
 
     @Inject(method = "setCPU", at = @At("HEAD"), cancellable = true)
     private void ae2additions$setQuantumCpu(@Nullable ICraftingCPU selectedCpu, CallbackInfo ci) {
-        if (selectedCpu == this.ae2additions$quantumCpu) {
-            ci.cancel();
-            return;
-        }
-
         if (this.ae2additions$quantumCpu != null) {
             this.ae2additions$quantumCpu.craftingLogic.removeListener(this.cpuChangeListener);
         }

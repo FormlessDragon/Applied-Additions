@@ -3,7 +3,6 @@ package com.formlesslab.ae2additions.quantum.cluster;
 import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.events.GridCraftingCpuChange;
-import ae2.me.cluster.IAEMultiBlock;
 import ae2.me.cluster.MBCalculator;
 import ae2.me.cluster.implementations.CraftingCPUCluster;
 import com.formlesslab.ae2additions.quantum.AAECraftingUnitType;
@@ -43,7 +42,7 @@ public class AdvCraftingCPUCalculator extends MBCalculator<AdvCraftingBlockEntit
             if (!(tile instanceof AdvCraftingBlockEntity quantumTile)) {
                 return false;
             }
-            if (!((IAEMultiBlock<?>) quantumTile).isValid()) {
+            if (!quantumTile.isValid()) {
                 return false;
             }
 

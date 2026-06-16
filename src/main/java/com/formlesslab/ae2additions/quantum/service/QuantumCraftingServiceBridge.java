@@ -11,7 +11,6 @@ import ae2.api.networking.crafting.UnsuitableCpus;
 import ae2.api.networking.energy.IEnergyService;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.stacks.AEKey;
-import ae2.crafting.execution.CraftingSubmitResult;
 import ae2.me.service.CraftingService;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPU;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCluster;
@@ -135,7 +134,7 @@ public final class QuantumCraftingServiceBridge {
             }
             return FAST_FIRST.compare(a, b);
         });
-        return candidates.get(0);
+        return candidates.getFirst();
     }
 
     public static ImmutableSet<ICraftingCPU> appendCpus(

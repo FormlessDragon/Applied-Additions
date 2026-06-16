@@ -6,9 +6,11 @@ import ae2.api.networking.crafting.CraftingJobStatus;
 import ae2.api.networking.crafting.ICraftingCPU;
 import ae2.container.guisync.GuiSync;
 import ae2.container.implementations.ContainerCraftingCPU;
-import ae2.container.implementations.ContainerCraftingStatus.CraftingCpuList;
-import ae2.container.implementations.ContainerCraftingStatus.CraftingCpuListEntry;
 import ae2.util.EnumCycler;
+import com.formlesslab.ae2additions.client.util.QuantumComputerEntry;
+import com.formlesslab.ae2additions.client.util.QuantumComputerList;
+import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPU;
+import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCluster;
 import net.minecraft.entity.player.InventoryPlayer;
 
 import java.util.ArrayList;
@@ -22,17 +24,19 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
     private static final String ACTION_CYCLE_SELECTION_MODE = "cycleQuantumSelectionMode";
     private static final String ACTION_CANCEL_CRAFTING = "cancelCrafting";
 
-    private static final CraftingCpuList EMPTY_CPU_LIST = new CraftingCpuList(Collections.emptyList());
-    private static final Comparator<CraftingCpuListEntry> CPU_COMPARATOR = Comparator
-        .comparing((CraftingCpuListEntry e) -> e.name() == null)
-        .thenComparing(e -> e.name() != null ? e.name().getFormattedText() : "")
-        .thenComparingInt(CraftingCpuListEntry::serial);
+    private static final QuantumComputerList EMPTY_CPU_LIST = new QuantumComputerList(Collections.emptyList());
+    private static final Comparator<QuantumComputerEntry> CPU_COMPARATOR = Comparator
+            .comparing((QuantumComputerEntry e) -> e.name() == null)
+            .thenComparing(e -> e.name() != null ? e.name().getFormattedText() : "")
+            .thenComparingInt(QuantumComputerEntry::clusterId)
+            .thenComparing(QuantumComputerEntry::isRemainingCapacity)
+            .thenComparingInt(QuantumComputerEntry::serial);
 
     private WeakHashMap<ICraftingCPU, Integer> cpuSerialMap;
     private final QuantumComputerHost host;
 
     @GuiSync(8)
-    public CraftingCpuList cpuList = EMPTY_CPU_LIST;
+    public QuantumComputerList cpuList = EMPTY_CPU_LIST;
 
     @GuiSync(9)
     private int selectedCpuSerial = -1;
@@ -98,17 +102,15 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
     }
 
     private void updateSelectedCpu() {
-        if (this.selectedCpuSerial != -1 && this.cpuList.cpus().stream()
-            .noneMatch(cpu -> cpu.serial() == this.selectedCpuSerial)) {
+        if (this.selectedCpuSerial != -1 && !containsCpuSerial(this.selectedCpuSerial)) {
             selectCpu(-1);
         }
 
         if (this.selectedCpuSerial == -1) {
-            for (CraftingCpuListEntry cpu : this.cpuList.cpus()) {
-                if (cpu.currentJob() != null) {
-                    selectCpu(cpu.serial());
-                    break;
-                }
+            ICraftingCPU lastSelectedCpu = this.host == null ? null : this.host.getLastSelectedQuantumCpu();
+            int lastSelectedSerial = getCpuSerial(lastSelectedCpu);
+            if (lastSelectedSerial != -1 && containsCpuSerial(lastSelectedSerial)) {
+                selectCpu(lastSelectedSerial);
             }
         }
 
@@ -117,8 +119,8 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
         }
     }
 
-    private CraftingCpuList createCpuList() {
-        List<CraftingCpuListEntry> entries = new ArrayList<>(this.lastCpuSet.size());
+    private QuantumComputerList createCpuList() {
+        List<QuantumComputerEntry> entries = new ArrayList<>(this.lastCpuSet.size());
         for (ICraftingCPU cpu : this.lastCpuSet) {
             int serial = getOrAssignCpuSerial(cpu);
             CraftingJobStatus status = cpu.getJobStatus();
@@ -126,18 +128,31 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
             if (status != null && status.totalItems() > 0) {
                 progress = (float) (status.progress() / (double) status.totalItems());
             }
-            entries.add(new CraftingCpuListEntry(
-                serial,
-                cpu.getAvailableStorage(),
-                cpu.getCoProcessors(),
-                cpu.getName(),
-                cpu.getSelectionMode(),
-                status != null ? status.crafting() : null,
-                progress,
-                status != null ? status.elapsedTimeNanos() : 0L));
+
+            int quantumClusterId = 0;
+            boolean isRemainingCapacity = false;
+
+            if (cpu instanceof AdvCraftingCPU advCpu) {
+                AdvCraftingCPUCluster cluster = advCpu.getParent();
+                if (cluster != null) {
+                    quantumClusterId = cluster.getGuiClusterId();
+                    isRemainingCapacity = cluster.getRemainingCapacityCPU() == advCpu;
+                }
+            }
+            entries.add(new QuantumComputerEntry(
+                    serial,
+                    cpu.getAvailableStorage(),
+                    cpu.getCoProcessors(),
+                    cpu.getName(),
+                    cpu.getSelectionMode(),
+                    status != null ? status.crafting() : null,
+                    progress,
+                    status != null ? status.elapsedTimeNanos() : 0L,
+                    quantumClusterId,
+                    isRemainingCapacity));
         }
         entries.sort(CPU_COMPARATOR);
-        return new CraftingCpuList(entries);
+        return new QuantumComputerList(entries);
     }
 
     private int getOrAssignCpuSerial(ICraftingCPU cpu) {
@@ -145,6 +160,22 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
             this.cpuSerialMap = new WeakHashMap<>();
         }
         return this.cpuSerialMap.computeIfAbsent(cpu, ignored -> this.nextCpuSerial++);
+    }
+
+    private int getCpuSerial(ICraftingCPU cpu) {
+        if (cpu == null || this.cpuSerialMap == null) {
+            return -1;
+        }
+        return this.cpuSerialMap.getOrDefault(cpu, -1);
+    }
+
+    private boolean containsCpuSerial(int serial) {
+        for (QuantumComputerEntry cpu : this.cpuList.cpus()) {
+            if (cpu.serial() == serial) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -179,8 +210,11 @@ public class QuantumComputerMenu extends ContainerCraftingCPU {
             }
         }
 
-        if (newSelectedCpu != this.selectedCpu) {
+        if (newSelectedCpu != this.selectedCpu || serial != this.selectedCpuSerial) {
             setCPU(newSelectedCpu);
+            if (this.host != null && newSelectedCpu != null) {
+                this.host.setLastSelectedQuantumCpu(newSelectedCpu);
+            }
         }
     }
 

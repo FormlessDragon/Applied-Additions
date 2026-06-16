@@ -6,10 +6,6 @@ import ae2.api.networking.crafting.ICraftingCPU;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Narrow bridge for the quantum computer GUI while the real tile/container code
- * is migrated by the backend workers.
- */
 public interface QuantumComputerHost {
     default List<? extends ICraftingCPU> getQuantumCpus() {
         return Collections.emptyList();
@@ -20,5 +16,12 @@ public interface QuantumComputerHost {
     }
 
     default void setQuantumSelectionMode(CpuSelectionMode mode) {
+    }
+
+    default ICraftingCPU getLastSelectedQuantumCpu() {
+        return null;
+    }
+
+    default void setLastSelectedQuantumCpu(ICraftingCPU cpu) {
     }
 }

@@ -5,15 +5,14 @@ import ae2.api.networking.GridFlags;
 import ae2.api.networking.IGridMultiblock;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.IGridNodeListener;
+import ae2.api.networking.crafting.ICraftingCPU;
 import ae2.api.orientation.BlockOrientation;
 import ae2.api.util.AECableType;
 import ae2.api.util.IConfigManager;
 import ae2.api.util.IConfigurableObject;
-import ae2.block.crafting.AbstractCraftingUnitBlock;
 import ae2.block.crafting.ICraftingUnitType;
-import ae2.core.definitions.AEBlocks;
 import ae2.crafting.inv.ListCraftingInventory;
-import ae2.me.cluster.implementations.CraftingCPUCluster;
+import ae2.me.cluster.IAEMultiBlock;
 import ae2.tile.crafting.ICraftingCPUTileEntity;
 import ae2.tile.grid.AENetworkedTile;
 import ae2.util.NullConfigManager;
@@ -21,6 +20,8 @@ import ae2.util.Platform;
 import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.ModGuiHandler;
 import com.formlesslab.ae2additions.quantum.AAECraftingUnitType;
+import com.formlesslab.ae2additions.quantum.QuantumContent;
+import com.formlesslab.ae2additions.quantum.block.AAEAbstractCraftingUnitBlock;
 import com.formlesslab.ae2additions.quantum.block.AAECraftingUnitBlock;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCalculator;
 import com.formlesslab.ae2additions.quantum.cluster.AdvCraftingCPUCluster;
@@ -42,7 +43,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 public class AdvCraftingBlockEntity extends AENetworkedTile
-    implements ICraftingCPUTileEntity, IPowerChannelState, IConfigurableObject, QuantumComputerHost {
+    implements IAEMultiBlock<AdvCraftingCPUCluster>, IPowerChannelState, IConfigurableObject, QuantumComputerHost {
 
     private final AdvCraftingCPUCalculator calc = new AdvCraftingCPUCalculator(this);
     private NBTTagCompound previousState;
@@ -64,7 +65,6 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         return new ItemStack(this.getCraftingUnitType().getItemFromType());
     }
 
-    @Override
     public void setName(String name) {
         this.setCustomName(name);
         if (this.cluster != null) {
@@ -73,17 +73,16 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         }
     }
 
-    public AbstractCraftingUnitBlock<?> getUnitBlock() {
+    public AAEAbstractCraftingUnitBlock<?> getUnitBlock() {
         if (this.world == null || this.isInvalid()) {
-            return AEBlocks.CRAFTING_UNIT.block();
+            return QuantumContent.getBlock(AAECraftingUnitType.QUANTUM_UNIT);
         }
         Block block = this.world.getBlockState(this.pos).getBlock();
-        return block instanceof AbstractCraftingUnitBlock
-            ? (AbstractCraftingUnitBlock<?>) block
-            : AEBlocks.CRAFTING_UNIT.block();
+        return block instanceof AAEAbstractCraftingUnitBlock<?>
+            ? (AAEAbstractCraftingUnitBlock<?>) block
+            : QuantumContent.getBlock(AAECraftingUnitType.QUANTUM_UNIT);
     }
 
-    @Override
     public ICraftingUnitType getCraftingUnitType() {
         return this.getUnitBlock().type;
     }
@@ -93,8 +92,16 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         return type instanceof AAECraftingUnitType ? (AAECraftingUnitType) type : AAECraftingUnitType.QUANTUM_UNIT;
     }
 
+    public long getStorageBytes() {
+        return this.getQuantumUnitType().getStorageBytes();
+    }
+
     public int getStorageMultiplier() {
         return this.getQuantumUnitType().getStorageMultiplier();
+    }
+
+    public int getAcceleratorThreads() {
+        return this.getQuantumUnitType().getAcceleratorThreads();
     }
 
     public int getAccelerationMultiplier() {
@@ -111,24 +118,18 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         }
     }
 
-    @Override
     public void updateMultiBlock(BlockPos changedPos) {
         if (this.world != null && !this.world.isRemote) {
             this.calc.updateMultiblockAfterNeighborUpdate(this.world, this.pos, changedPos);
         }
     }
 
-    @Override
-    public void updateStatus(CraftingCPUCluster cluster) {
+    public void updateStatus(AdvCraftingCPUCluster cluster) {
         if (this.cluster != null && this.cluster != cluster) {
             this.cluster.breakCluster();
         }
-        this.cluster = cluster instanceof AdvCraftingCPUCluster ? (AdvCraftingCPUCluster) cluster : null;
+        this.cluster = cluster;
         this.updateSubType(true);
-    }
-
-    public void updateStatus(AdvCraftingCPUCluster cluster) {
-        this.updateStatus((CraftingCPUCluster) cluster);
     }
 
     @Override
@@ -202,7 +203,6 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         }
     }
 
-    @Override
     public void breakCluster() {
         if (this.cluster == null) {
             return;
@@ -242,12 +242,6 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         this.cluster.destroy();
     }
 
-    @Override
-    public void cancelJobAndDropContents() {
-        this.breakCluster();
-    }
-
-    @Override
     public void updateSubType(boolean updateFormed) {
         if (this.world == null || this.isInvalid()) {
             return;
@@ -276,27 +270,22 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         return this.isPowered() && this.isFormed();
     }
 
-    @Override
     public boolean isCoreBlock() {
         return this.coreBlock;
     }
 
-    @Override
     public void setCoreBlock(boolean coreBlock) {
         this.coreBlock = coreBlock;
     }
 
-    @Override
     public NBTTagCompound getPreviousState() {
         return this.previousState;
     }
 
-    @Override
     public void setPreviousState(NBTTagCompound previousState) {
         this.previousState = previousState;
     }
 
-    @Override
     public boolean isFormed() {
         if (this.world != null && this.world.isRemote) {
             return this.clientState.formed();
@@ -312,7 +301,6 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
         return this.getMainNode().isActive();
     }
 
-    @Override
     public ICraftingCPUTileEntity.ClientState getRenderState() {
         if (this.world != null && !this.world.isRemote) {
             return this.createRenderState();
@@ -323,10 +311,6 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
     @Override
     public IConfigManager getConfigManager() {
         return this.cluster != null ? this.cluster.getConfigManager() : NullConfigManager.INSTANCE;
-    }
-
-    public boolean isMultiblocked() {
-        return this.cluster != null && this.cluster.numBlockEntities() > 1;
     }
 
     public void onQuantumComputerActivated(EntityPlayer player) {
@@ -360,6 +344,18 @@ public class AdvCraftingBlockEntity extends AENetworkedTile
             this.cluster.postCpuChange();
         } else {
             this.getConfigManager().putSetting(ae2.api.config.Settings.CPU_SELECTION_MODE, mode);
+        }
+    }
+
+    @Override
+    public ICraftingCPU getLastSelectedQuantumCpu() {
+        return this.cluster == null ? null : this.cluster.getLastSelectedCpu();
+    }
+
+    @Override
+    public void setLastSelectedQuantumCpu(ICraftingCPU cpu) {
+        if (this.cluster != null) {
+            this.cluster.setLastSelectedCpu(cpu);
         }
     }
 

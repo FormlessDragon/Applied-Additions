@@ -1,8 +1,8 @@
 package com.formlesslab.ae2additions.quantum.client;
 
-import ae2.block.crafting.AbstractCraftingUnitBlock;
 import ae2.client.render.VertexFormats;
 import ae2.client.render.crafting.CraftingCubeState;
+import com.formlesslab.ae2additions.quantum.block.AAEAbstractCraftingUnitBlock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,7 +86,7 @@ public class QuantumComputerBakedModel implements IBakedModel {
         }
 
         QuantumComputerConnect connect = getConnect(state);
-        boolean powered = state != null && state.getValue(AbstractCraftingUnitBlock.POWERED);
+        boolean powered = state != null && state.getValue(AAEAbstractCraftingUnitBlock.POWERED);
         BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
         ArrayList<BakedQuad> quads = new ArrayList<>(this.structure ? 8 : 6);
 
@@ -285,7 +285,7 @@ public class QuantumComputerBakedModel implements IBakedModel {
                 return connect;
             }
 
-            CraftingCubeState cubeState = ((IExtendedBlockState) state).getValue(AbstractCraftingUnitBlock.STATE);
+            CraftingCubeState cubeState = ((IExtendedBlockState) state).getValue(AAEAbstractCraftingUnitBlock.STATE);
             if (cubeState != null) {
                 return QuantumComputerConnect.from(BlockPos.ORIGIN, cubeState.connections());
             }

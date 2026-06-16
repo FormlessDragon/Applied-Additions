@@ -167,7 +167,7 @@ if (!enable_shadow.toBoolean()) {
 }
 
 compileJava {
-    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {

@@ -7,25 +7,25 @@ import ae2.client.Point;
 import ae2.client.gui.ICompositeWidget;
 import ae2.client.gui.Icon;
 import ae2.client.gui.Tooltip;
+import ae2.client.gui.me.crafting.CraftingTimeDisplay;
 import ae2.client.gui.style.Blitter;
 import ae2.client.gui.style.Color;
 import ae2.client.gui.style.GuiStyle;
 import ae2.client.gui.style.PaletteColor;
 import ae2.client.gui.widgets.Scrollbar;
-import ae2.container.implementations.ContainerCraftingStatus.CraftingCpuListEntry;
 import ae2.core.localization.ButtonToolTips;
 import ae2.core.localization.GuiText;
-import ae2.core.localization.Tooltips;
+import com.formlesslab.ae2additions.client.util.QuantumComputerEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 public class AdvCpuSelectionList implements ICompositeWidget {
@@ -76,7 +76,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
 
     @Override
     public boolean onMouseUp(Point mousePos, int button) {
-        CraftingCpuListEntry cpu = hitTestCpu(mousePos);
+        QuantumComputerEntry cpu = hitTestCpu(mousePos);
         if (cpu != null) {
             this.menu.selectCpu(cpu.serial());
             return true;
@@ -87,7 +87,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
 
     @Override
     public Tooltip getTooltip(int mouseX, int mouseY) {
-        CraftingCpuListEntry cpu = hitTestCpu(new Point(mouseX, mouseY));
+        QuantumComputerEntry cpu = hitTestCpu(new Point(mouseX, mouseY));
         if (cpu == null) {
             return null;
         }
@@ -95,29 +95,32 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         List<ITextComponent> tooltipLines = new ArrayList<>();
         tooltipLines.add(getCpuName(cpu));
 
+        tooltipLines.add(gray(ButtonToolTips.CpuStatusStorage.text(formatStorage(cpu))));
+
         int coProcessors = cpu.coProcessors();
         if (coProcessors == 1) {
-            tooltipLines.add(gray(ButtonToolTips.CpuStatusCoProcessor.text(Tooltips.ofUnformattedNumber(coProcessors))));
+            tooltipLines.add(gray(ButtonToolTips.CpuStatusCoProcessor.text(String.valueOf(coProcessors))));
         } else if (coProcessors > 1) {
-            tooltipLines.add(gray(ButtonToolTips.CpuStatusCoProcessors.text(Tooltips.ofUnformattedNumber(coProcessors))));
+            tooltipLines.add(gray(ButtonToolTips.CpuStatusCoProcessors.text(String.valueOf(coProcessors))));
         }
 
-        tooltipLines.add(gray(ButtonToolTips.CpuStatusStorage.text(Tooltips.of(formatStorage(cpu)))));
-
-        ButtonToolTips modeText = modeTooltip(cpu.mode());
-        if (modeText != null && cpu.mode() != CpuSelectionMode.ANY) {
-            tooltipLines.add(modeText.text());
+        switch (cpu.mode()) {
+            case PLAYER_ONLY -> tooltipLines.add(gray(ButtonToolTips.CpuSelectionModePlayersOnly.text()));
+            case MACHINE_ONLY -> tooltipLines.add(gray(ButtonToolTips.CpuSelectionModeAutomationOnly.text()));
+            default -> {
+            }
         }
 
         GenericStack currentJob = cpu.currentJob();
         if (currentJob != null) {
-            tooltipLines.add(ButtonToolTips.CpuStatusCrafting.text(Tooltips.of(
-                    currentJob.what().formatAmount(currentJob.amount(), AmountFormat.FULL)))
+            String amount = currentJob.what().formatAmount(currentJob.amount(), AmountFormat.FULL);
+            tooltipLines.add(gray(ButtonToolTips.CpuStatusCrafting.text(amount)
                 .appendText(" ")
-                .appendSibling(currentJob.what().getDisplayName()));
-            tooltipLines.add(ButtonToolTips.CpuStatusCraftedIn.text(
-                Tooltips.of(Math.round(cpu.progress() * 100.0F) + "%"),
-                Tooltips.of(TimeUnit.NANOSECONDS.toSeconds(cpu.elapsedTimeNanos()) + "s")));
+                .appendSibling(currentJob.what().getDisplayName())));
+            var elapsedTimeTooltip = CraftingTimeDisplay.getElapsedTimeTooltip(cpu.progress(), cpu.elapsedTimeNanos());
+            tooltipLines.add(gray(new TextComponentTranslation(
+                elapsedTimeTooltip.translationKey(),
+                elapsedTimeTooltip.args())));
         }
 
         return new Tooltip(tooltipLines);
@@ -125,8 +128,11 @@ public class AdvCpuSelectionList implements ICompositeWidget {
 
     @Override
     public void updateBeforeRender() {
-        int hiddenRows = Math.max(0, this.menu.cpuList.cpus().size() - getVisibleRows());
-        this.scrollbar.setRange(0, hiddenRows, Math.max(1, getVisibleRows() / 3));
+        int rows = getVisibleRows();
+        this.bounds.height = 19 + rows * getButtonRowHeight() + 7;
+        this.scrollbar.setHeight(Math.max(1, rows * getButtonRowHeight() - 1));
+        int hiddenRows = Math.max(0, this.menu.cpuList.cpus().size() - rows);
+        this.scrollbar.setRange(0, hiddenRows, Math.max(1, rows / 3));
     }
 
     @Override
@@ -140,7 +146,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
 
         int from = clamp(this.scrollbar.getCurrentScroll(), 0, this.menu.cpuList.cpus().size());
         int to = clamp(this.scrollbar.getCurrentScroll() + getVisibleRows(), 0, this.menu.cpuList.cpus().size());
-        for (CraftingCpuListEntry cpu : this.menu.cpuList.cpus().subList(from, to)) {
+        for (QuantumComputerEntry cpu : this.menu.cpuList.cpus().subList(from, to)) {
             if (cpu.serial() == this.menu.getSelectedCpuSerial()) {
                 this.buttonBgSelected.dest(x, y).blit();
             } else {
@@ -187,7 +193,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         }
     }
 
-    private CraftingCpuListEntry hitTestCpu(Point mousePos) {
+    private QuantumComputerEntry hitTestCpu(Point mousePos) {
         int relX = mousePos.x() - this.bounds.x - 8;
         if (relX < 0 || relX >= this.buttonBg.getSrcWidth()) {
             return null;
@@ -200,11 +206,11 @@ public class AdvCpuSelectionList implements ICompositeWidget {
             return null;
         }
 
-        List<CraftingCpuListEntry> cpus = this.menu.cpuList.cpus();
-        if (buttonIdx >= 0 && buttonIdx < cpus.size()) {
-            return cpus.get(buttonIdx);
+        List<QuantumComputerEntry> cpus = this.menu.cpuList.cpus();
+        if (buttonIdx < 0 || buttonIdx >= cpus.size()) {
+            return null;
         }
-        return null;
+        return cpus.get(buttonIdx);
     }
 
     private void drawBackground(int x, int y) {
@@ -246,24 +252,15 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         GlStateManager.popMatrix();
     }
 
-    private String formatStorage(CraftingCpuListEntry cpu) {
+    private String formatStorage(QuantumComputerEntry cpu) {
         long storage = cpu.storage();
-        int unit = -1;
-
-        while (storage > 1024) {
-            storage /= 1024;
-            unit++;
+        if (storage >= 1024 * 1024) {
+            return (storage / (1024 * 1024)) + "M";
         }
-
-        return storage + switch (unit) {
-            case 0 -> "k";
-            case 1 -> "M";
-            case 2 -> "G";
-            default -> "T";
-        };
+        return (storage / 1024) + "k";
     }
 
-    private ITextComponent getCpuName(CraftingCpuListEntry cpu) {
+    private ITextComponent getCpuName(QuantumComputerEntry cpu) {
         return cpu.name() != null ? cpu.name() : GuiText.CpuFallbackName.text(cpu.serial());
     }
 
@@ -283,11 +280,4 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         return component.setStyle(new Style().setColor(TextFormatting.GRAY));
     }
 
-    private static ButtonToolTips modeTooltip(CpuSelectionMode mode) {
-        return switch (mode) {
-            case PLAYER_ONLY -> ButtonToolTips.CpuSelectionModePlayersOnly;
-            case MACHINE_ONLY -> ButtonToolTips.CpuSelectionModeAutomationOnly;
-            default -> ButtonToolTips.CpuSelectionModeAny;
-        };
-    }
 }

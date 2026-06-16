@@ -5,7 +5,7 @@ import ae2.api.config.CpuSelectionMode;
 import ae2.api.config.Settings;
 import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridNode;
-import ae2.api.networking.crafting.CraftingJobStatus;
+import ae2.api.networking.crafting.ICraftingCPU;
 import ae2.api.networking.crafting.ICraftingPlan;
 import ae2.api.networking.crafting.ICraftingRequester;
 import ae2.api.networking.crafting.ICraftingSubmitResult;
@@ -13,12 +13,14 @@ import ae2.api.networking.events.GridCraftingCpuChange;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.stacks.AEKey;
 import ae2.api.stacks.GenericStack;
+import ae2.api.util.IConfigManager;
 import ae2.crafting.execution.CraftingSubmitResult;
 import ae2.crafting.inv.ListCraftingInventory;
+import ae2.me.cluster.IAECluster;
 import ae2.me.cluster.MBCalculator;
-import ae2.me.cluster.implementations.CraftingCPUCluster;
 import ae2.me.helpers.MachineSource;
 import ae2.me.service.CraftingService;
+import ae2.tile.crafting.TileCraftingMonitor;
 import com.formlesslab.ae2additions.quantum.tile.AdvCraftingBlockEntity;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
@@ -26,14 +28,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 
-public class AdvCraftingCPUCluster extends CraftingCPUCluster {
+public class AdvCraftingCPUCluster implements IAECluster {
+    private static int nextGuiClusterId = 1;
+
     private static final String TAG_CPUS = "cpus";
     private static final String TAG_CPU_LIST_COMPAT = "cpuList";
     private static final String TAG_KEY = "key";
@@ -41,15 +48,34 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
     private static final String TAG_CPU = "cpu";
     private static final String TAG_CONFIG = "config";
 
+    private final BlockPos boundsMin;
+    private final BlockPos boundsMax;
+    private final int guiClusterId;
+
     private final Map<UUID, AdvCraftingCPU> activeCpus = new HashMap<>();
     private final List<AdvCraftingBlockEntity> quantumBlockEntities = new ObjectArrayList<>();
+    private final List<TileCraftingMonitor> status = new ArrayList<>();
     private AdvCraftingCPU remainingStorageCpu;
-    private long storageMultiplier;
-    private long remainingStorage;
-    private int acceleratorMultiplier;
+    private final IConfigManager configManager;
+    private ITextComponent myName = null;
+    private boolean destroyed = false;
+    private long storage = 0;
+    private long storageMultiplier = 0;
+    private long remainingStorage = 0;
+    private MachineSource machineSrc = null;
+    private int accelerator = 0;
+    private int acceleratorMultiplier = 0;
+    private UUID lastSelectedCpuId;
+    private boolean lastSelectedRemainingCapacity;
 
     public AdvCraftingCPUCluster(BlockPos boundsMin, BlockPos boundsMax) {
-        super(boundsMin, boundsMax);
+        this.boundsMin = boundsMin.toImmutable();
+        this.boundsMax = boundsMax.toImmutable();
+        this.guiClusterId = nextGuiClusterId++;
+
+        this.configManager = IConfigManager.builder(this::markDirty)
+                .registerSetting(Settings.CPU_SELECTION_MODE, CpuSelectionMode.ANY)
+                .build();
     }
 
     public Iterator<AdvCraftingBlockEntity> getQuantumBlockEntities() {
@@ -68,25 +94,36 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         tile.setCoreBlock(false);
         tile.saveChanges();
         this.quantumBlockEntities.addFirst(tile);
-        super.addTileEntity(tile);
 
+        if (tile.getStorageBytes() > 0) {
+            this.storage += tile.getStorageBytes();
+            this.recalculateRemainingStorage();
+        }
         if (tile.getStorageMultiplier() > 0) {
             this.storageMultiplier += tile.getStorageMultiplier();
+            this.recalculateRemainingStorage();
+        }
+        if (tile.getAcceleratorThreads() > 0) {
+            if (tile.getAcceleratorThreads() <= 16) {
+                this.accelerator += tile.getAcceleratorThreads();
+            } else {
+                throw new IllegalArgumentException("Co-processor threads may not exceed 16 per single unit block.");
+            }
         }
         if (tile.getAccelerationMultiplier() > 0) {
             this.acceleratorMultiplier += tile.getAccelerationMultiplier();
+            this.recalculateRemainingStorage();
         }
-        this.recalculateRemainingStorage();
     }
 
     @Override
-    public void addTileEntity(ae2.tile.crafting.ICraftingCPUTileEntity tile) {
-        if (tile instanceof AdvCraftingBlockEntity quantumTile) {
-            this.addQuantumBlockEntity(quantumTile);
-        } else {
-            super.addTileEntity(tile);
-            this.recalculateRemainingStorage();
-        }
+    public BlockPos getBoundsMin() {
+        return this.boundsMin;
+    }
+
+    @Override
+    public BlockPos getBoundsMax() {
+        return this.boundsMax;
     }
 
     @Override
@@ -116,8 +153,13 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
     }
 
     @Override
-    public long insert(AEKey what, long amount, Actionable type, IActionSource src) {
-        return this.insertIntoActiveCpus(what, amount, type);
+    public boolean isDestroyed() {
+        return false;
+    }
+
+    @Override
+    public Iterator<? extends TileEntity> getBlockEntities() {
+        return this.quantumBlockEntities.iterator();
     }
 
     public long insertIntoActiveCpus(AEKey what, long amount, Actionable type) {
@@ -161,16 +203,10 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         this.postCpuChange();
     }
 
-    @Override
-    public void cancelJob() {
-        this.cancelJobs();
-    }
-
     public void cancelJob(UUID id) {
         this.killCpu(id, true);
     }
 
-    @Override
     public ICraftingSubmitResult submitJob(
         IGrid grid,
         ICraftingPlan plan,
@@ -195,23 +231,10 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         return result;
     }
 
-    @Override
-    public boolean isBusy() {
-        return !this.getActiveCPUs().isEmpty();
-    }
-
-    @Override
-    public CraftingJobStatus getJobStatus() {
-        List<AdvCraftingCPU> active = this.getActiveCPUs();
-        return active.isEmpty() ? null : active.getFirst().getJobStatus();
-    }
-
-    @Override
     public long getAvailableStorage() {
         return this.remainingStorage;
     }
 
-    @Override
     public int getCoProcessors() {
         int coProcessors = this.accelerator;
         if (this.acceleratorMultiplier > 0) {
@@ -220,7 +243,10 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         return coProcessors;
     }
 
-    @Override
+    public ITextComponent getName() {
+        return this.myName;
+    }
+
     public void updateOutput(GenericStack finalOutput) {
         GenericStack stack = finalOutput != null && finalOutput.amount() <= 0 ? null : finalOutput;
         for (var monitor : this.status) {
@@ -228,7 +254,10 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         }
     }
 
-    @Override
+    public IActionSource getSrc() {
+        return Objects.requireNonNull(this.machineSrc);
+    }
+
     public void markDirty() {
         AdvCraftingBlockEntity core = this.getCore();
         if (core != null) {
@@ -236,7 +265,6 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         }
     }
 
-    @Override
     protected AdvCraftingBlockEntity getCore() {
         if (this.machineSrc == null) {
             return null;
@@ -247,19 +275,26 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
             .orElse(null);
     }
 
-    @Override
     public World getLevel() {
         AdvCraftingBlockEntity core = this.getCore();
         return core == null ? null : core.getWorld();
     }
 
-    @Override
+    public IGrid getGrid() {
+        IGridNode node = this.getNode();
+        return node == null ? null : node.grid();
+    }
+
     public IGridNode getNode() {
         AdvCraftingBlockEntity core = this.getCore();
         return core == null ? null : core.getActionableNode();
     }
 
-    @Override
+    public boolean isActive() {
+        IGridNode node = getNode();
+        return node != null && node.isActive();
+    }
+
     public void done() {
         AdvCraftingBlockEntity core = this.getCore();
         if (core == null) {
@@ -274,7 +309,6 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         this.recalculateRemainingStorage();
     }
 
-    @Override
     public void writeToNBT(NBTTagCompound data) {
         NBTTagList cpuList = new NBTTagList();
         for (Map.Entry<UUID, AdvCraftingCPU> entry : this.activeCpus.entrySet()) {
@@ -293,7 +327,6 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         data.setTag(TAG_CONFIG, config);
     }
 
-    @Override
     public void readFromNBT(NBTTagCompound data) {
         this.activeCpus.clear();
         NBTTagList cpuList = data.getTagList(data.hasKey(TAG_CPUS, 9) ? TAG_CPUS : TAG_CPU_LIST_COMPAT, 10);
@@ -314,7 +347,6 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         this.recalculateRemainingStorage();
     }
 
-    @Override
     public void updateName() {
         this.myName = null;
         for (AdvCraftingBlockEntity tile : this.quantumBlockEntities) {
@@ -328,7 +360,6 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         }
     }
 
-    @Override
     public void breakCluster() {
         AdvCraftingBlockEntity core = this.getCore();
         if (core != null) {
@@ -336,9 +367,16 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         }
     }
 
-    @Override
     public CpuSelectionMode getSelectionMode() {
         return this.configManager.getSetting(Settings.CPU_SELECTION_MODE);
+    }
+
+    public int getGuiClusterId() {
+        return this.guiClusterId;
+    }
+
+    public IConfigManager getConfigManager() {
+        return this.configManager;
     }
 
     public List<ListCraftingInventory> getInventories() {
@@ -367,6 +405,7 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         }
         for (UUID id : remove) {
             this.activeCpus.remove(id);
+            this.clearLastSelectedCpu(id);
         }
         if (!remove.isEmpty()) {
             this.recalculateRemainingStorage();
@@ -382,8 +421,42 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         return this.remainingStorageCpu;
     }
 
+    public AdvCraftingCPU getLastSelectedCpu() {
+        if (this.lastSelectedRemainingCapacity) {
+            return this.getRemainingCapacityCPU();
+        }
+        if (this.lastSelectedCpuId == null) {
+            return null;
+        }
+
+        AdvCraftingCPU cpu = this.activeCpus.get(this.lastSelectedCpuId);
+        if (cpu == null || cpu.isMarkedForDeletion()) {
+            this.lastSelectedCpuId = null;
+            return null;
+        }
+        return cpu;
+    }
+
+    public void setLastSelectedCpu(ICraftingCPU cpu) {
+        if (!(cpu instanceof AdvCraftingCPU quantumCpu) || quantumCpu.getParent() != this) {
+            this.lastSelectedCpuId = null;
+            this.lastSelectedRemainingCapacity = false;
+            return;
+        }
+
+        if (quantumCpu.uniqueId == null) {
+            this.lastSelectedCpuId = null;
+            this.lastSelectedRemainingCapacity = true;
+            return;
+        }
+
+        this.lastSelectedCpuId = quantumCpu.uniqueId;
+        this.lastSelectedRemainingCapacity = false;
+    }
+
     public void deactivate(UUID id) {
         this.activeCpus.remove(id);
+        this.clearLastSelectedCpu(id);
         this.recalculateRemainingStorage();
         this.updateGridForChangedCpu(this);
     }
@@ -414,6 +487,7 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
         if (cpu == null) {
             return;
         }
+        this.clearLastSelectedCpu(id);
         cpu.craftingLogic.cancel();
         cpu.markForDeletion();
         this.recalculateRemainingStorage();
@@ -432,5 +506,34 @@ public class AdvCraftingCPUCluster extends CraftingCPUCluster {
             }
             tile.updateStatus(cluster);
         }
+    }
+
+    private void clearLastSelectedCpu(UUID id) {
+        if (id.equals(this.lastSelectedCpuId)) {
+            this.lastSelectedCpuId = null;
+            this.lastSelectedRemainingCapacity = false;
+        }
+    }
+
+    /**
+     * Checks if this CPU cluster can be automatically selected for a crafting request by the given action source.
+     */
+    public boolean canBeAutoSelectedFor(IActionSource source) {
+        return switch (getSelectionMode()) {
+            case ANY -> true;
+            case PLAYER_ONLY -> source.player().isPresent();
+            case MACHINE_ONLY -> source.player().isEmpty();
+        };
+    }
+
+    /**
+     * Checks if this CPU cluster is preferred for crafting requests by the given action source.
+     */
+    public boolean isPreferredFor(IActionSource source) {
+        return switch (getSelectionMode()) {
+            case ANY -> false;
+            case PLAYER_ONLY -> source.player().isPresent();
+            case MACHINE_ONLY -> source.player().isEmpty();
+        };
     }
 }

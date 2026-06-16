@@ -4,7 +4,6 @@ import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.events.GridCraftingCpuChange;
 import ae2.me.cluster.MBCalculator;
-import ae2.me.cluster.implementations.CraftingCPUCluster;
 import com.formlesslab.ae2additions.quantum.AAECraftingUnitType;
 import com.formlesslab.ae2additions.quantum.QuantumConfig;
 import com.formlesslab.ae2additions.quantum.tile.AdvCraftingBlockEntity;
@@ -12,7 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class AdvCraftingCPUCalculator extends MBCalculator<AdvCraftingBlockEntity, CraftingCPUCluster> {
+public class AdvCraftingCPUCalculator extends MBCalculator<AdvCraftingBlockEntity, AdvCraftingCPUCluster> {
     public AdvCraftingCPUCalculator(AdvCraftingBlockEntity tile) {
         super(tile);
     }
@@ -26,7 +25,7 @@ public class AdvCraftingCPUCalculator extends MBCalculator<AdvCraftingBlockEntit
     }
 
     @Override
-    public CraftingCPUCluster createCluster(World world, BlockPos min, BlockPos max) {
+    public AdvCraftingCPUCluster createCluster(World world, BlockPos min, BlockPos max) {
         return new AdvCraftingCPUCluster(min, max);
     }
 
@@ -89,7 +88,7 @@ public class AdvCraftingCPUCalculator extends MBCalculator<AdvCraftingBlockEntit
     }
 
     @Override
-    public void updateBlockEntities(CraftingCPUCluster cluster, World world, BlockPos min, BlockPos max) {
+    public void updateBlockEntities(AdvCraftingCPUCluster cluster, World world, BlockPos min, BlockPos max) {
         if (!(cluster instanceof AdvCraftingCPUCluster quantumCluster)) {
             return;
         }

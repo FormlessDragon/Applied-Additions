@@ -127,18 +127,16 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
         return this.craftingLogic.getInventory();
     }
 
-    public void deactivate() {
-        if (this.uniqueId != null) {
-            this.parent.deactivate(this.uniqueId);
-        }
-    }
-
     public void writeToNBT(NBTTagCompound data) {
         this.craftingLogic.writeToNBT(data);
     }
 
     public void readFromNBT(NBTTagCompound data) {
         this.craftingLogic.readFromNBT(data);
+    }
+
+    public AdvCraftingCPUCluster getParent() {
+        return this.parent;
     }
 
     public boolean isMarkedForDeletion() {

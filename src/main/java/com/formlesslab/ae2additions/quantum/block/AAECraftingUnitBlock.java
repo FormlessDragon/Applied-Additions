@@ -1,6 +1,5 @@
 package com.formlesslab.ae2additions.quantum.block;
 
-import ae2.block.crafting.AbstractCraftingUnitBlock;
 import ae2.block.crafting.ICraftingUnitType;
 import com.formlesslab.ae2additions.quantum.AAECraftingUnitType;
 import com.formlesslab.ae2additions.quantum.client.QuantumComputerConnect;
@@ -17,7 +16,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
 
-public class AAECraftingUnitBlock extends AbstractCraftingUnitBlock<AdvCraftingBlockEntity> {
+public class AAECraftingUnitBlock extends AAEAbstractCraftingUnitBlock<AdvCraftingBlockEntity> {
     public AAECraftingUnitBlock(ICraftingUnitType type) {
         super(type, AdvCraftingBlockEntity.class);
         if (type == AAECraftingUnitType.QUANTUM_STRUCTURE || type == AAECraftingUnitType.QUANTUM_CORE) {

@@ -12,12 +12,13 @@ import ae2.api.util.AEColor;
 import ae2.core.definitions.AEItems;
 import ae2.tile.ServerTickingTile;
 import ae2.tile.grid.AENetworkedTile;
-import com.formlesslab.ae2additions.init.ModConfig;
-import com.formlesslab.ae2additions.init.ModContent;
-import com.formlesslab.ae2additions.wireless.WirelessConnection;
 import com.formlesslab.ae2additions.api.WirelessEndpoint;
 import com.formlesslab.ae2additions.api.WirelessNode;
 import com.formlesslab.ae2additions.api.WirelessStatus;
+import com.formlesslab.ae2additions.init.ModConfig;
+import com.formlesslab.ae2additions.init.ModContent;
+import com.formlesslab.ae2additions.wireless.WirelessConnection;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -26,7 +27,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -137,7 +137,7 @@ public class TileWirelessHub extends AENetworkedTile
 
     @Override
     public AECableType getCableConnectionType(EnumFacing dir) {
-        return AECableType.DENSE_SMART;
+        return AECableType.DENSE_COVERED;
     }
 
     @Override

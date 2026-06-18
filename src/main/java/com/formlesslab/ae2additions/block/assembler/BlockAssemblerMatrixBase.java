@@ -4,18 +4,23 @@ import ae2.block.AEBaseTileBlock;
 import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.ModGuiHandler;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
+import com.formlesslab.ae2additions.util.TooltipHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+
+import java.util.List;
 
 public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase> extends AEBaseTileBlock<M> {
     public static final PropertyBool FORMED = PropertyBool.create("formed");
@@ -78,6 +83,13 @@ public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase
             tile.breakCluster();
         }
         super.breakBlock(world, pos, state);
+    }
+
+    @Override
+    public void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
+        if (this.getRegistryName() != null) {
+            TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath());
+        }
     }
 
     @Override

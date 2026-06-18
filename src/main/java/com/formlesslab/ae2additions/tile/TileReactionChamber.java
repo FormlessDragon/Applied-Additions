@@ -11,7 +11,6 @@ import ae2.api.networking.ticking.IGridTickable;
 import ae2.api.networking.ticking.TickRateModulation;
 import ae2.api.networking.ticking.TickingRequest;
 import ae2.api.orientation.BlockOrientation;
-import ae2.api.orientation.RelativeSide;
 import ae2.api.upgrades.IUpgradeInventory;
 import ae2.api.upgrades.IUpgradeableObject;
 import ae2.api.upgrades.UpgradeInventories;
@@ -99,11 +98,6 @@ public class TileReactionChamber extends AENetworkedPoweredTile
     @Override
     public AECableType getCableConnectionType(EnumFacing dir) {
         return AECableType.COVERED;
-    }
-
-    @Override
-    public EnumSet<EnumFacing> getGridConnectableSides(BlockOrientation orientation) {
-        return EnumSet.complementOf(EnumSet.of(orientation.getSide(RelativeSide.FRONT)));
     }
 
     @Override

@@ -22,21 +22,14 @@ import ae2.util.Platform;
 import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.ModGuiHandler;
 import com.formlesslab.ae2additions.api.AAECraftingUnitType;
-import com.formlesslab.ae2additions.init.QuantumContent;
+import com.formlesslab.ae2additions.api.QuantumComputerHost;
 import com.formlesslab.ae2additions.block.quantum.BlockAAEAbstractCraftingUnit;
 import com.formlesslab.ae2additions.block.quantum.BlockAAECraftingUnit;
+import com.formlesslab.ae2additions.init.QuantumContent;
 import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPUCalculator;
 import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPUCluster;
-import com.formlesslab.ae2additions.api.QuantumComputerHost;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
@@ -46,6 +39,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.*;
 
 public class TileAdvCraftingBlock extends AENetworkedTile
     implements IAEMultiBlock<AdvCraftingCPUCluster>, IPowerChannelState, IConfigurableObject, QuantumComputerHost {
@@ -150,7 +145,7 @@ public class TileAdvCraftingBlock extends AENetworkedTile
 
     @Override
     public AECableType getCableConnectionType(EnumFacing dir) {
-        return this.isFormed() ? AECableType.SMART : AECableType.NONE;
+        return this.isFormed() ? AECableType.COVERED : AECableType.NONE;
     }
 
     @Override

@@ -4,15 +4,17 @@ import ae2.block.AEBaseTileBlock;
 import ae2.block.crafting.ICraftingUnitType;
 import ae2.helpers.crafting.CraftingCubeState;
 import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
+import com.formlesslab.ae2additions.util.TooltipHelper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import java.util.EnumSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -21,6 +23,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.property.ExtendedBlockState;
 import net.minecraftforge.common.property.IExtendedBlockState;
 import net.minecraftforge.common.property.IUnlistedProperty;
+
+import java.util.EnumSet;
+import java.util.List;
 
 public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBlock> extends AEBaseTileBlock<T> {
     public static final PropertyBool FORMED = PropertyBool.create("formed");
@@ -163,5 +168,10 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
             tile.breakCluster();
         }
         super.breakBlock(world, pos, state);
+    }
+
+    @Override
+    public void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
+        TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath());
     }
 }

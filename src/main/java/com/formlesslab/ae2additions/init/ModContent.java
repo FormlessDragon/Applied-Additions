@@ -44,51 +44,75 @@ import java.util.List;
 
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
 public final class ModContent {
+    public static final Item QUANTUM_INFUSED_DUST;
+    public static final CreativeTabs CREATIVE_TAB;
+    public static final BlockWirelessConnector WIRELESS_CONNECTOR;
+    public static final BlockWirelessHub WIRELESS_HUB;
+    public static final ItemWirelessTool WIRELESS_TOOL;
+    public static final ItemWirelessConnectorUpgrade WIRELESS_CONNECTOR_UPGRADE;
+    public static final Item SHATTERED_SINGULARITY;
+    public static final Item QUANTUM_PROCESSOR_PRESS;
+    public static final Item PRINTED_QUANTUM_PROCESSOR;
+    public static final Item QUANTUM_ALLOY;
+    public static final Item QUANTUM_ALLOY_PLATE;
+    public static final Item QUANTUM_PROCESSOR;
+    public static final Item QUANTUM_STORAGE_COMPONENT;
+    public static final BlockReactionChamber REACTION_CHAMBER;
+    public static final ModFluids.QuantumInfusionBlock QUANTUM_INFUSION_BLOCK;
+    public static final BlockQuantumAlloyBlock QUANTUM_ALLOY_BLOCK;
+    public static final BlockQuantumAlloyWall QUANTUM_ALLOY_WALL;
+    public static final BlockQuantumAlloySlab QUANTUM_ALLOY_SLAB;
+    public static final BlockQuantumAlloyStairs QUANTUM_ALLOY_STAIRS;
+    public static final BlockQuantumAlloyDoubleSlab QUANTUM_ALLOY_DOUBLE_SLAB;
+    public static final BlockAssemblerMatrixFrame ASSEMBLER_MATRIX_FRAME;
+    public static final BlockAssemblerMatrixWall ASSEMBLER_MATRIX_WALL;
+    public static final BlockAssemblerMatrixGlass ASSEMBLER_MATRIX_GLASS;
+    public static final BlockAssemblerMatrixPattern ASSEMBLER_MATRIX_PATTERN;
+    public static final BlockAssemblerMatrixCrafter ASSEMBLER_MATRIX_CRAFTER;
+    public static final BlockAssemblerMatrixSpeed ASSEMBLER_MATRIX_SPEED;
+
+    private static final List<Block> BLOCKS;
+    private static final List<Item> ITEMS;
+    private static final List<ModelEntry> MODELS;
+    private static final List<TileEntityEntry> TILE_ENTITIES;
+
 
     static {
         ModFluids.init();
-    }
-
-    public static final Item QUANTUM_INFUSED_DUST = new Item();
-
-    public static final CreativeTabs CREATIVE_TAB = new CreativeTabs(Reference.MOD_ID) {
-        @Override
-        public ItemStack createIcon() {
-            return new ItemStack(WIRELESS_CONNECTOR);
-        }
-    };
-
-    public static final BlockWirelessConnector WIRELESS_CONNECTOR = new BlockWirelessConnector();
-    public static final BlockWirelessHub WIRELESS_HUB = new BlockWirelessHub();
-    public static final ItemWirelessTool WIRELESS_TOOL = new ItemWirelessTool();
-    public static final ItemWirelessConnectorUpgrade WIRELESS_CONNECTOR_UPGRADE = new ItemWirelessConnectorUpgrade();
-    public static final Item SHATTERED_SINGULARITY = new Item();
-    public static final Item QUANTUM_PROCESSOR_PRESS = new Item();
-    public static final Item PRINTED_QUANTUM_PROCESSOR = new Item();
-    public static final Item QUANTUM_ALLOY = new Item();
-    public static final Item QUANTUM_ALLOY_PLATE = new Item();
-    public static final Item QUANTUM_PROCESSOR = new Item();
-    public static final Item QUANTUM_STORAGE_COMPONENT = new Item();
-    public static final BlockReactionChamber REACTION_CHAMBER = new BlockReactionChamber();
-    public static final ModFluids.QuantumInfusionBlock QUANTUM_INFUSION_BLOCK = new ModFluids.QuantumInfusionBlock();
-    public static final BlockQuantumAlloyBlock QUANTUM_ALLOY_BLOCK = new BlockQuantumAlloyBlock();
-    public static final BlockQuantumAlloyWall QUANTUM_ALLOY_WALL = new BlockQuantumAlloyWall(QUANTUM_ALLOY_BLOCK);
-    public static final BlockQuantumAlloySlab QUANTUM_ALLOY_SLAB = new BlockQuantumAlloySlab();
-    public static final BlockQuantumAlloyStairs QUANTUM_ALLOY_STAIRS = new BlockQuantumAlloyStairs(QUANTUM_ALLOY_BLOCK.getDefaultState());
-    public static final BlockQuantumAlloyDoubleSlab QUANTUM_ALLOY_DOUBLE_SLAB = new BlockQuantumAlloyDoubleSlab(QUANTUM_ALLOY_SLAB);
-    public static final BlockAssemblerMatrixFrame ASSEMBLER_MATRIX_FRAME = new BlockAssemblerMatrixFrame();
-    public static final BlockAssemblerMatrixWall ASSEMBLER_MATRIX_WALL = new BlockAssemblerMatrixWall();
-    public static final BlockAssemblerMatrixGlass ASSEMBLER_MATRIX_GLASS = new BlockAssemblerMatrixGlass();
-    public static final BlockAssemblerMatrixPattern ASSEMBLER_MATRIX_PATTERN = new BlockAssemblerMatrixPattern();
-    public static final BlockAssemblerMatrixCrafter ASSEMBLER_MATRIX_CRAFTER = new BlockAssemblerMatrixCrafter();
-    public static final BlockAssemblerMatrixSpeed ASSEMBLER_MATRIX_SPEED = new BlockAssemblerMatrixSpeed();
-
-    private static final List<Block> BLOCKS = new ArrayList<>();
-    private static final List<Item> ITEMS = new ArrayList<>();
-    private static final List<ModelEntry> MODELS = new ArrayList<>();
-    private static final List<TileEntityEntry> TILE_ENTITIES = new ArrayList<>();
-
-    static {
+        QUANTUM_INFUSED_DUST = new Item();
+        CREATIVE_TAB = new CreativeTabs("ae2additions") {
+            public ItemStack createIcon() {
+                return new ItemStack(ModContent.WIRELESS_CONNECTOR);
+            }
+        };
+        WIRELESS_CONNECTOR = new BlockWirelessConnector();
+        WIRELESS_HUB = new BlockWirelessHub();
+        WIRELESS_TOOL = new ItemWirelessTool();
+        WIRELESS_CONNECTOR_UPGRADE = new ItemWirelessConnectorUpgrade();
+        SHATTERED_SINGULARITY = new Item();
+        QUANTUM_PROCESSOR_PRESS = new Item();
+        PRINTED_QUANTUM_PROCESSOR = new Item();
+        QUANTUM_ALLOY = new Item();
+        QUANTUM_ALLOY_PLATE = new Item();
+        QUANTUM_PROCESSOR = new Item();
+        QUANTUM_STORAGE_COMPONENT = new Item();
+        REACTION_CHAMBER = new BlockReactionChamber();
+        QUANTUM_INFUSION_BLOCK = new ModFluids.QuantumInfusionBlock();
+        QUANTUM_ALLOY_BLOCK = new BlockQuantumAlloyBlock();
+        QUANTUM_ALLOY_WALL = new BlockQuantumAlloyWall(QUANTUM_ALLOY_BLOCK);
+        QUANTUM_ALLOY_SLAB = new BlockQuantumAlloySlab();
+        QUANTUM_ALLOY_STAIRS = new BlockQuantumAlloyStairs(QUANTUM_ALLOY_BLOCK.getDefaultState());
+        QUANTUM_ALLOY_DOUBLE_SLAB = new BlockQuantumAlloyDoubleSlab(QUANTUM_ALLOY_SLAB);
+        ASSEMBLER_MATRIX_FRAME = new BlockAssemblerMatrixFrame();
+        ASSEMBLER_MATRIX_WALL = new BlockAssemblerMatrixWall();
+        ASSEMBLER_MATRIX_GLASS = new BlockAssemblerMatrixGlass();
+        ASSEMBLER_MATRIX_PATTERN = new BlockAssemblerMatrixPattern();
+        ASSEMBLER_MATRIX_CRAFTER = new BlockAssemblerMatrixCrafter();
+        ASSEMBLER_MATRIX_SPEED = new BlockAssemblerMatrixSpeed();
+        BLOCKS = new ArrayList<>();
+        ITEMS = new ArrayList<>();
+        MODELS = new ArrayList<>();
+        TILE_ENTITIES = new ArrayList<>();
         registerBlock(WIRELESS_CONNECTOR, "wireless_connect");
         registerBlock(WIRELESS_HUB, "wireless_hub");
         registerItem(WIRELESS_TOOL, "wireless_tool");
@@ -109,9 +133,11 @@ public final class ModContent {
         registerBlock(QUANTUM_ALLOY_SLAB, "quantum_alloy_slab");
         setupBlock(QUANTUM_ALLOY_DOUBLE_SLAB, "quantum_alloy_double_slab");
         BLOCKS.add(QUANTUM_ALLOY_DOUBLE_SLAB);
+
         for (AAECraftingUnitType type : AAECraftingUnitType.values()) {
             registerBlock(QuantumContent.getBlock(type), type.getRegistryName());
         }
+
         registerBlock(ASSEMBLER_MATRIX_FRAME, "assembler_matrix_frame");
         registerBlock(ASSEMBLER_MATRIX_WALL, "assembler_matrix_wall");
         registerBlock(ASSEMBLER_MATRIX_GLASS, "assembler_matrix_glass");
@@ -230,7 +256,7 @@ public final class ModContent {
     @SideOnly(Side.CLIENT)
     private static void registerModel(Item item, String name) {
         ModelLoader.setCustomModelResourceLocation(item, 0,
-            new ModelResourceLocation(id(name), "inventory"));
+                new ModelResourceLocation(id(name), "inventory"));
     }
 
     @SideOnly(Side.CLIENT)
@@ -242,12 +268,6 @@ public final class ModContent {
                 return location;
             }
         });
-    }
-
-    private record ModelEntry(Item item, String name) {
-    }
-
-    private record TileEntityEntry(Class<? extends TileEntity> tileClass, String name) {
     }
 
     public static void registerOreDictionary() {
@@ -288,5 +308,11 @@ public final class ModContent {
                 Ingredient.fromStacks(new ItemStack(PRINTED_QUANTUM_PROCESSOR)),
                 Ingredient.fromStacks(AEItems.SILICON_PRINT.stack()),
                 InscriberProcessType.PRESS));
+    }
+
+    private record ModelEntry(Item item, String name) {
+    }
+
+    private record TileEntityEntry(Class<? extends TileEntity> tileClass, String name) {
     }
 }

@@ -73,7 +73,6 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     @Override
     public void initGui() {
         super.initGui();
-        this.setInitialFocus(this.searchField);
         this.resetScrollbar();
         this.refreshVisibleSlots();
     }

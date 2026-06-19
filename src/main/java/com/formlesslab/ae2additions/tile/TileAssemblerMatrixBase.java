@@ -32,12 +32,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class TileAssemblerMatrixBase extends AENetworkedTile
     implements IAEMultiBlock<ClusterAssemblerMatrix>, IPowerChannelState, IConfigurableObject {
@@ -168,7 +163,7 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile
     @Override
     public boolean isActive() {
         if (!isClientSide()) {
-            return this.getMainNode().isActive();
+            return this.isNodeActive();
         }
         return this.isPowered() && this.isFormed();
     }
@@ -216,7 +211,7 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile
         }
 
         boolean formed = this.isFormed();
-        boolean power = formed && this.getMainNode().isPowered();
+        boolean power = formed && this.isNodePowered();
         IBlockState current = this.world.getBlockState(this.pos);
 
         if (current.getBlock() instanceof BlockAssemblerMatrixBase) {
@@ -240,7 +235,23 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile
         if (isClientSide()) {
             return this.clientPowered;
         }
-        return this.isFormed() && this.getMainNode().isPowered();
+        return this.isFormed() && this.isNodePowered();
+    }
+
+    private boolean isNodePowered() {
+        try {
+            return this.getMainNode().isPowered();
+        } catch (IllegalStateException ignored) {
+            return false;
+        }
+    }
+
+    private boolean isNodeActive() {
+        try {
+            return this.getMainNode().isActive();
+        } catch (IllegalStateException ignored) {
+            return false;
+        }
     }
 
     @Override

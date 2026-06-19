@@ -12,6 +12,7 @@ import ae2.util.Platform;
 import com.formlesslab.ae2additions.api.WirelessStatus;
 import com.formlesslab.ae2additions.client.render.WirelessHighlightHandler;
 import com.formlesslab.ae2additions.container.ContainerWirelessConnector;
+import com.formlesslab.ae2additions.util.RemoteBlockRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.math.BlockPos;
@@ -52,7 +53,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
     protected void updateBeforeRender() {
         super.updateBeforeRender();
         this.statusIcon.setMessage(statusDescription(this.container.status));
-        this.highlightButton.setVisibility(this.container.status == WirelessStatus.WORKING && this.container.hasRemote);
+        this.highlightButton.setVisibility(this.container.hasRemote);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
     private void drawRemotePreview(int textColor) {
         Rectangle preview = this.resolveWidgetBounds("remotePreview");
         drawRect(preview.x, preview.y, preview.x + preview.width, preview.y + preview.height, 0x66000000);
-        if (!this.container.hasRemote || this.container.status != WirelessStatus.WORKING) {
+        if (!this.container.hasRemote) {
             String text = new TextComponentTranslation("gui.ae2additions.remote.none").getFormattedText();
             this.fontRenderer.drawString(text,
                     preview.x + (preview.width - this.fontRenderer.getStringWidth(text)) / 2,
@@ -98,7 +99,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
         }
 
         BlockPos pos = remotePos();
-        GuiRemoteBlockRenderer.renderScene(pos, preview.x + preview.width / 2, preview.y + 35,
+        RemoteBlockRenderer.renderScene(pos, preview.x + preview.width / 2, preview.y + 35,
             17.0F * this.remoteZoom, this.remoteRotationX, this.remoteRotationY,
             this.remoteOffsetX, this.remoteOffsetY,
                 this.guiLeft + preview.x, this.guiTop + preview.y, preview.width, preview.height);
@@ -183,9 +184,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
     }
 
     private boolean canInteractWithRemote(int mouseX, int mouseY) {
-        return this.container.hasRemote
-            && this.container.status == WirelessStatus.WORKING
-                && this.resolveWidgetBounds("remotePreview").contains(mouseX - this.guiLeft, mouseY - this.guiTop);
+        return this.container.hasRemote && this.resolveWidgetBounds("remotePreview").contains(mouseX - this.guiLeft, mouseY - this.guiTop);
     }
 
     private static float clamp(float value, float min, float max) {

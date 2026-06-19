@@ -1,24 +1,30 @@
-package com.formlesslab.ae2additions.client.gui;
+package com.formlesslab.ae2additions.util;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import org.lwjgl.opengl.GL11;
 
-final class GuiRemoteBlockRenderer {
-    private GuiRemoteBlockRenderer() {
+import java.util.List;
+
+public final class RemoteBlockRenderer {
+    private RemoteBlockRenderer() {
     }
 
-    static boolean renderSingle(BlockPos pos, int x, int y, float size) {
+    public static boolean renderSingle(BlockPos pos, int x, int y, float size) {
         World world = Minecraft.getMinecraft().world;
         PreviewBlock previewBlock = getPreviewBlock(world, pos);
         if (previewBlock == null) {
@@ -33,9 +39,7 @@ final class GuiRemoteBlockRenderer {
         return true;
     }
 
-    static boolean renderScene(BlockPos pos, int centerX, int centerY, float scale,
-                               float rotationX, float rotationY, float offsetX, float offsetY,
-                               int clipX, int clipY, int clipWidth, int clipHeight) {
+    public static boolean renderScene(BlockPos pos, int centerX, int centerY, float scale, float rotationX, float rotationY, float offsetX, float offsetY, int clipX, int clipY, int clipWidth, int clipHeight) {
         World world = Minecraft.getMinecraft().world;
         if (world == null || pos == null) {
             return false;
@@ -57,9 +61,7 @@ final class GuiRemoteBlockRenderer {
                 }
 
                 GlStateManager.pushMatrix();
-                GlStateManager.translate(renderPos.getX() - pos.getX(),
-                    renderPos.getY() - pos.getY(),
-                    renderPos.getZ() - pos.getZ());
+                GlStateManager.translate(renderPos.getX() - pos.getX(), renderPos.getY() - pos.getY(), renderPos.getZ() - pos.getZ());
                 renderState(world, renderPos, previewBlock);
                 GlStateManager.popMatrix();
                 rendered = true;
@@ -111,6 +113,8 @@ final class GuiRemoteBlockRenderer {
     private static void renderModel(World world, BlockPos pos, PreviewBlock previewBlock) {
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         IBakedModel model = dispatcher.getModelForState(previewBlock.modelState);
+        long random = MathHelper.getPositionRandom(pos);
+        boolean useBiomeTint = shouldRenderWithBiomeTint(previewBlock.renderState, model, random);
 
         try {
             for (BlockRenderLayer layer : BlockRenderLayer.values()) {
@@ -122,8 +126,14 @@ final class GuiRemoteBlockRenderer {
                 if (layer == BlockRenderLayer.TRANSLUCENT) {
                     GlStateManager.depthMask(false);
                 }
-                dispatcher.getBlockModelRenderer().renderModelBrightnessColor(previewBlock.renderState, model,
-                    1.0F, 1.0F, 1.0F, 1.0F);
+                if (useBiomeTint) {
+                    renderQuads(world, pos, previewBlock.renderState, model.getQuads(previewBlock.renderState, null, random));
+                    for (EnumFacing side : EnumFacing.values()) {
+                        renderQuads(world, pos, previewBlock.renderState, model.getQuads(previewBlock.renderState, side, random));
+                    }
+                } else {
+                    dispatcher.getBlockModelRenderer().renderModelBrightnessColor(previewBlock.renderState, model, 1.0F, 1.0F, 1.0F, 1.0F);
+                }
                 if (layer == BlockRenderLayer.TRANSLUCENT) {
                     GlStateManager.depthMask(true);
                 }
@@ -131,6 +141,44 @@ final class GuiRemoteBlockRenderer {
         } finally {
             GlStateManager.depthMask(true);
             ForgeHooksClient.setRenderLayer(null);
+        }
+    }
+
+    private static boolean shouldRenderWithBiomeTint(IBlockState state, IBakedModel model, long random) {
+        ResourceLocation registryName = state.getBlock().getRegistryName();
+        if (registryName == null || !"minecraft".equals(registryName.getNamespace())) {
+            return false;
+        }
+        if (hasTintedQuads(model.getQuads(state, null, random))) {
+            return true;
+        }
+        for (EnumFacing side : EnumFacing.values()) {
+            if (hasTintedQuads(model.getQuads(state, side, random))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasTintedQuads(List<BakedQuad> quads) {
+        for (BakedQuad quad : quads) {
+            if (quad.hasTintIndex()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void renderQuads(World world, BlockPos pos, IBlockState state, List<BakedQuad> quads) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        for (BakedQuad quad : quads) {
+            int color = quad.hasTintIndex()
+                    ? Minecraft.getMinecraft().getBlockColors().colorMultiplier(state, world, pos, quad.getTintIndex())
+                    : 0xFFFFFF;
+            buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.ITEM);
+            LightUtil.renderQuadColor(buffer, quad, 0xFF000000 | color);
+            tessellator.draw();
         }
     }
 

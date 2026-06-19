@@ -4,9 +4,9 @@ import ae2.container.guisync.GuiSync;
 import ae2.container.guisync.PacketWritable;
 import ae2.container.implementations.UpgradeableContainer;
 import ae2.me.helpers.IGridConnectedTile;
+import com.formlesslab.ae2additions.api.WirelessStatus;
 import com.formlesslab.ae2additions.tile.TileWirelessConnector;
 import com.formlesslab.ae2additions.tile.TileWirelessHub;
-import com.formlesslab.ae2additions.api.WirelessStatus;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -66,6 +66,20 @@ public class ContainerWirelessHub extends UpgradeableContainer<TileWirelessHub> 
 
         private PortState() {
             Arrays.fill(this.statuses, WirelessStatus.UNCONNECTED);
+        }
+
+        public PortState(ByteBuf data) {
+            for (int i = 0; i < TileWirelessHub.MAX_PORTS; i++) {
+                int statusOrdinal = data.readUnsignedByte();
+                this.statuses[i] = statusOrdinal >= 0 && statusOrdinal < WirelessStatus.values().length
+                        ? WirelessStatus.values()[statusOrdinal]
+                        : WirelessStatus.UNCONNECTED;
+                this.hasRemote[i] = data.readBoolean();
+                this.remoteX[i] = data.readInt();
+                this.remoteY[i] = data.readInt();
+                this.remoteZ[i] = data.readInt();
+                this.remoteChannels[i] = data.readInt();
+            }
         }
 
         public static PortState empty() {

@@ -179,7 +179,7 @@
   },
   "images": {
     "emptyPort": {
-      "texture": "guis/wireless_hub.png",
+      "texture": "ae2additions:textures/guis/wireless_hub.png",
       "srcRect": [
         176,
         0,

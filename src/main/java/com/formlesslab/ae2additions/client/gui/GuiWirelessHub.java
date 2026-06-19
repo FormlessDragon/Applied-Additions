@@ -13,6 +13,7 @@ import com.formlesslab.ae2additions.api.WirelessStatus;
 import com.formlesslab.ae2additions.client.render.WirelessHighlightHandler;
 import com.formlesslab.ae2additions.container.ContainerWirelessHub;
 import com.formlesslab.ae2additions.tile.TileWirelessHub;
+import com.formlesslab.ae2additions.util.RemoteBlockRenderer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -97,7 +98,7 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
     }
 
     private void renderRemoteBlock(ContainerWirelessHub.PortState ports, int port, int x, int y) {
-        if (!GuiRemoteBlockRenderer.renderSingle(remotePos(ports, port), x + 1, y + 1, 14.0F)) {
+        if (!RemoteBlockRenderer.renderSingle(remotePos(ports, port), x + 1, y + 1, 14.0F)) {
             this.emptyPort.copy().dest(x, y).blit();
         }
     }

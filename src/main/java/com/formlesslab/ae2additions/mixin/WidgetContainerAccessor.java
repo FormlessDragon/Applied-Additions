@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(value = WidgetContainer.class, remap = false)
 public interface WidgetContainerAccessor {
     @Accessor("compositeWidgets")
-    Object2ObjectLinkedOpenHashMap<String, ICompositeWidget> ae2additions$getCompositeWidgets();
+    Object2ObjectLinkedOpenHashMap<String, ICompositeWidget> getCompositeWidgets();
 }

@@ -36,12 +36,7 @@ public abstract class MixinGuiCraftingStatus extends GuiCraftingCPU<ContainerCra
         CallbackInfo ci
     ) {
         Scrollbar scrollbar = (Scrollbar) this.widgets.getComposite("selectCpuScrollbar");
-        GroupedCPUSelectionList groupedList = new GroupedCPUSelectionList(container, scrollbar, style,
-            () -> Math.max(1, this.getCraftingRows() - 1));
-        groupedList.setSize(
-            style.getWidget("selectCpuList").getWidth(),
-            style.getWidget("selectCpuList").getHeight());
-        ((WidgetContainerAccessor) this.widgets).ae2additions$getCompositeWidgets()
-            .put("selectCpuList", groupedList);
+        GroupedCPUSelectionList groupedList = new GroupedCPUSelectionList(container, scrollbar, style, () -> Math.max(1, this.getCraftingRows() - 1));
+        this.widgets.add("selectCpuList", groupedList);
     }
 }

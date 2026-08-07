@@ -49,7 +49,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     private final ArrayList<AssemblerMatrixSlot> visibleSlots = new ArrayList<>();
     private final AETextField searchField;
     private final MatrixIconButton patternShowButton;
-    private int runningThreads;
+    private int queuedJobs;
     private boolean hidePatternProviders;
 
     public GuiAssemblerMatrix(T container, InventoryPlayer playerInventory, GuiStyle style) {
@@ -93,7 +93,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     @Override
     protected void updateBeforeRender() {
         super.updateBeforeRender();
-        this.runningThreads = this.container.getRunningThreads();
+        this.queuedJobs = this.container.getQueuedJobs();
         this.hidePatternProviders = this.container.isPatternProvidersHidden();
     }
 
@@ -101,8 +101,8 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         this.refreshVisibleSlots();
         super.drawScreen(mouseX, mouseY, partialTicks);
-        if (isMouseOverThreadText(mouseX - this.guiLeft, mouseY - this.guiTop)) {
-            this.drawTooltipLines(mouseX, mouseY, Collections.singletonList(I18n.format("gui.ae2additions.assembler_matrix.threads", this.runningThreads)));
+        if (isMouseOverQueueText(mouseX - this.guiLeft, mouseY - this.guiTop)) {
+            this.drawTooltipLines(mouseX, mouseY, Collections.singletonList(I18n.format("gui.ae2additions.assembler_matrix.queued_jobs", this.queuedJobs)));
         }
     }
 
@@ -110,8 +110,8 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
         int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
-        Point threadPos = this.resolveWidget("threadText");
-        this.fontRenderer.drawString(I18n.format("gui.ae2additions.assembler_matrix.threads", this.runningThreads), threadPos.x(), threadPos.y(), textColor);
+        Point queuePos = this.resolveWidget("queueText");
+        this.fontRenderer.drawString(I18n.format("gui.ae2additions.assembler_matrix.queued_jobs", this.queuedJobs), queuePos.x(), queuePos.y(), textColor);
         if (!this.searchField.getText().isEmpty()) {
             for (AssemblerMatrixSlot slot : this.visibleSlots) {
                 int color = containsMatched(slot.getStack()) ? 0x8A00FF00 : 0x6A000000;
@@ -294,9 +294,9 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
         this.container.requestPatternMode(nextHide);
     }
 
-    private boolean isMouseOverThreadText(int x, int y) {
-        WidgetStyle widget = this.style.getWidget("threadText");
-        Point pos = this.resolveWidget("threadText");
+    private boolean isMouseOverQueueText(int x, int y) {
+        WidgetStyle widget = this.style.getWidget("queueText");
+        Point pos = this.resolveWidget("queueText");
         int width = widget.getWidth() > 0 ? widget.getWidth() : 110;
         int height = widget.getHeight() > 0 ? widget.getHeight() : 12;
         return x >= pos.x() && x < pos.x() + width && y >= pos.y() && y < pos.y() + height;

@@ -1,5 +1,6 @@
 package com.formlesslab.ae2additions.block.assembler;
 
+import com.formlesslab.ae2additions.init.Configurations;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixFrame;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
@@ -22,6 +23,15 @@ public class BlockAssemblerMatrixFrame extends BlockAssemblerMatrixBase<TileAsse
 
     private static boolean isFrame(IBlockAccess world, int x, int y, int z) {
         return world.getBlockState(new BlockPos(x, y, z)).getBlock() instanceof BlockAssemblerMatrixFrame;
+    }
+
+    @Override
+    protected Object[] getTooltipArguments(int line) {
+        if (line != 4) {
+            return super.getTooltipArguments(line);
+        }
+        int maxSize = Configurations.ASSEMBLER_MATRIX.maxSize;
+        return new Object[]{maxSize, maxSize, maxSize};
     }
 
     @Override

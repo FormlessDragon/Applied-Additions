@@ -36,7 +36,7 @@ public class ContainerAssemblerMatrix extends AEBaseContainer implements Assembl
     private final Map<Long, ItemStack[]> patternSnapshots = new LinkedHashMap<>();
 
     @GuiSync(7)
-    private int runningThreads;
+    private int queuedJobs;
 
     @GuiSync(8)
     private boolean hidePatternProviders;
@@ -64,7 +64,7 @@ public class ContainerAssemblerMatrix extends AEBaseContainer implements Assembl
     public void detectAndSendChanges() {
         if (this.isServerSide()) {
             ClusterAssemblerMatrix cluster = this.host.getCluster();
-            this.runningThreads = cluster == null ? 0 : cluster.getBusyCrafterAmount();
+            this.queuedJobs = cluster == null ? 0 : cluster.getQueuedJobAmount();
             this.hidePatternProviders = this.host.getConfigManager().getSetting(Settings.PATTERN_ACCESS_TERMINAL) == YesNo.NO;
         }
         super.detectAndSendChanges();
@@ -94,8 +94,8 @@ public class ContainerAssemblerMatrix extends AEBaseContainer implements Assembl
     }
 
     @Override
-    public int getRunningThreads() {
-        return this.runningThreads;
+    public int getQueuedJobs() {
+        return this.queuedJobs;
     }
 
     @Override

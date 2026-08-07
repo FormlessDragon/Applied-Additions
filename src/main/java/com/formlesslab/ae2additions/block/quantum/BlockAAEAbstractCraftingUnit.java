@@ -3,6 +3,8 @@ package com.formlesslab.ae2additions.block.quantum;
 import ae2.block.AEBaseTileBlock;
 import ae2.block.crafting.ICraftingUnitType;
 import ae2.helpers.crafting.CraftingCubeState;
+import com.formlesslab.ae2additions.api.AAECraftingUnitType;
+import com.formlesslab.ae2additions.init.Configurations;
 import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
 import com.formlesslab.ae2additions.util.TooltipHelper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -166,6 +168,37 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
 
     @Override
     public void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
-        TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath());
+        TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath(), this::getTooltipArguments);
+    }
+
+    private Object[] getTooltipArguments(int line) {
+        if (!(this.type instanceof AAECraftingUnitType quantumType)) {
+            return new Object[0];
+        }
+
+        return switch (quantumType) {
+            case QUANTUM_CORE ->
+                    line == 2 ? new Object[]{Configurations.QUANTUM_COMPUTER.coreStorageMb, Configurations.QUANTUM_COMPUTER.coreParallelism} : new Object[0];
+            case DATA_ENTANGLER -> switch (line) {
+                case 1 -> new Object[]{Configurations.QUANTUM_COMPUTER.maxDataEntanglers};
+                case 2 -> new Object[]{Configurations.QUANTUM_COMPUTER.dataEntanglerMultiplier};
+                default -> new Object[0];
+            };
+            case QUANTUM_ACCELERATOR ->
+                    line == 1 ? new Object[]{Configurations.QUANTUM_COMPUTER.acceleratorParallelism} : new Object[0];
+            case QUANTUM_MULTI_THREADER -> switch (line) {
+                case 1 -> new Object[]{Configurations.QUANTUM_COMPUTER.maxMultiThreaders};
+                case 2 -> new Object[]{Configurations.QUANTUM_COMPUTER.multiThreaderMultiplier};
+                default -> new Object[0];
+            };
+            case QUANTUM_STRUCTURE -> {
+                if (line != 3) {
+                    yield new Object[0];
+                }
+                int maxSize = Configurations.QUANTUM_COMPUTER.maxSize;
+                yield new Object[]{maxSize, maxSize, maxSize};
+            }
+            default -> new Object[0];
+        };
     }
 }

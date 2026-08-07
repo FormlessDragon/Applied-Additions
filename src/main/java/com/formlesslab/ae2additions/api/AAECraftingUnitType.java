@@ -10,7 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
 
 public enum AAECraftingUnitType implements ICraftingUnitType {
-    QUANTUM_UNIT("quantum_unit", 0), QUANTUM_CORE("quantum_core", 256), QUANTUM_STORAGE_128("quantum_storage_128", 128), QUANTUM_STORAGE_256("quantum_storage_256", 256), DATA_ENTANGLER("data_entangler", 0), QUANTUM_ACCELERATOR("quantum_accelerator", 0), QUANTUM_MULTI_THREADER("quantum_multi_threader", 0), QUANTUM_STRUCTURE("quantum_structure", 0);
+    QUANTUM_UNIT("quantum_unit", 0), QUANTUM_CORE("quantum_core", 0), QUANTUM_STORAGE_128("quantum_storage_128", 128), QUANTUM_STORAGE_256("quantum_storage_256", 256), DATA_ENTANGLER("data_entangler", 0), QUANTUM_ACCELERATOR("quantum_accelerator", 0), QUANTUM_MULTI_THREADER("quantum_multi_threader", 0), QUANTUM_STRUCTURE("quantum_structure", 0);
 
     private static final ResourceLocation FAMILY_ID = quantumComputerId();
     public static final ResourceLocation MODEL_PROVIDER_ID = FAMILY_ID;
@@ -37,7 +37,8 @@ public enum AAECraftingUnitType implements ICraftingUnitType {
 
     @Override
     public long getStorageBytes() {
-        return 1024L * 1024L * this.storageMb;
+        int configuredStorageMb = this == QUANTUM_CORE ? Configurations.QUANTUM_COMPUTER.coreStorageMb : this.storageMb;
+        return 1024L * 1024L * configuredStorageMb;
     }
 
     public int getStorageMultiplier() {
@@ -46,7 +47,10 @@ public enum AAECraftingUnitType implements ICraftingUnitType {
 
     @Override
     public int getAcceleratorThreads() {
-        return this == QUANTUM_ACCELERATOR || this == QUANTUM_CORE ? Configurations.QUANTUM_COMPUTER.acceleratorThreads : 0;
+        if (this == QUANTUM_CORE) {
+            return Configurations.QUANTUM_COMPUTER.coreParallelism;
+        }
+        return this == QUANTUM_ACCELERATOR ? Configurations.QUANTUM_COMPUTER.acceleratorParallelism : 0;
     }
 
     public int getAccelerationMultiplier() {

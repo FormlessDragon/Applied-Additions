@@ -10,7 +10,7 @@ package com.formlesslab.ae2additions.api;
 public interface AssemblerMatrixMenu {
     int PATTERN_SLOTS = 36;
 
-    default int getRunningThreads() {
+    default int getQueuedJobs() {
         return 0;
     }
 

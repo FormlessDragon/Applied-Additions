@@ -39,6 +39,7 @@ public class TileWirelessConnector extends AENetworkedTile implements ServerTick
     private double powerUse = 1.0;
     private AEColor color = AEColor.TRANSPARENT;
     private boolean clientConnected;
+
     public TileWirelessConnector() {
         this.getMainNode().setFlags(GridFlags.DENSE_CAPACITY);
         this.getMainNode().setIdlePowerUsage(this.powerUse);
@@ -57,7 +58,7 @@ public class TileWirelessConnector extends AENetworkedTile implements ServerTick
         this.getMainNode().setGridColor(this.color);
 
         return changed || oldColor != this.color || oldConnected != this.clientConnected;
-    }    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_CONNECTOR), 4, this::onUpgradesChanged);
+    }
 
     @Override
     public void serverTick() {
@@ -69,6 +70,8 @@ public class TileWirelessConnector extends AENetworkedTile implements ServerTick
             this.reactive();
         }
     }
+
+    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_CONNECTOR), 4, this::onUpgradesChanged);
 
     @Override
     public void onMainNodeStateChanged(IGridNodeListener.State reason) {

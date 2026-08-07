@@ -67,6 +67,22 @@ public class ClusterAdvCraftingCPU implements IAECluster {
         this.configManager = IConfigManager.builder(this::markDirty).registerSetting(Settings.CPU_SELECTION_MODE, CpuSelectionMode.ANY).build();
     }
 
+    private static int saturatedAdd(int left, int right) {
+        return left > Integer.MAX_VALUE - right ? Integer.MAX_VALUE : left + right;
+    }
+
+    private static int saturatedMultiply(int left, int right) {
+        return left > Integer.MAX_VALUE / right ? Integer.MAX_VALUE : left * right;
+    }
+
+    private static long saturatedAdd(long left, long right) {
+        return left > Long.MAX_VALUE - right ? Long.MAX_VALUE : left + right;
+    }
+
+    private static long saturatedMultiply(long left, long right) {
+        return left > Long.MAX_VALUE / right ? Long.MAX_VALUE : left * right;
+    }
+
     public Iterator<TileAdvCraftingBlock> getQuantumBlockEntities() {
         return this.quantumBlockEntities.iterator();
     }
@@ -85,22 +101,18 @@ public class ClusterAdvCraftingCPU implements IAECluster {
         this.quantumBlockEntities.addFirst(tile);
 
         if (tile.getStorageBytes() > 0) {
-            this.storage += tile.getStorageBytes();
+            this.storage = saturatedAdd(this.storage, tile.getStorageBytes());
             this.recalculateRemainingStorage();
         }
         if (tile.getStorageMultiplier() > 0) {
-            this.storageMultiplier += tile.getStorageMultiplier();
+            this.storageMultiplier = saturatedAdd(this.storageMultiplier, tile.getStorageMultiplier());
             this.recalculateRemainingStorage();
         }
         if (tile.getAcceleratorThreads() > 0) {
-            if (tile.getAcceleratorThreads() <= 16) {
-                this.accelerator += tile.getAcceleratorThreads();
-            } else {
-                throw new IllegalArgumentException("Co-processor threads may not exceed 16 per single unit block.");
-            }
+            this.accelerator = saturatedAdd(this.accelerator, tile.getAcceleratorThreads());
         }
         if (tile.getAccelerationMultiplier() > 0) {
-            this.acceleratorMultiplier += tile.getAccelerationMultiplier();
+            this.acceleratorMultiplier = saturatedAdd(this.acceleratorMultiplier, tile.getAccelerationMultiplier());
             this.recalculateRemainingStorage();
         }
     }
@@ -188,7 +200,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     public int getCoProcessors() {
         int coProcessors = this.accelerator;
         if (this.acceleratorMultiplier > 0) {
-            coProcessors *= this.acceleratorMultiplier;
+            coProcessors = saturatedMultiply(coProcessors, this.acceleratorMultiplier);
         }
         return coProcessors;
     }
@@ -440,12 +452,12 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     public void recalculateRemainingStorage() {
         long totalStorage = this.storage;
         if (this.storageMultiplier > 0) {
-            totalStorage *= this.storageMultiplier;
+            totalStorage = saturatedMultiply(totalStorage, this.storageMultiplier);
         }
 
         long usedStorage = 0;
         for (AdvCraftingCPU cpu : this.activeCpus.values()) {
-            usedStorage += cpu.getAvailableStorage();
+            usedStorage = saturatedAdd(usedStorage, cpu.getAvailableStorage());
         }
         this.remainingStorage = Math.max(0, totalStorage - usedStorage);
         this.remainingStorageCpu = null;

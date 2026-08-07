@@ -156,15 +156,15 @@ public class TileAssemblerMatrixPattern extends TileAssemblerMatrixFunction impl
 
     @Override
     public boolean canMergePatternPush(IPatternDetails patternDetails) {
-        return false;
+        return patternDetails instanceof IAssemblerPattern && this.patterns.contains(patternDetails) && this.cluster != null;
     }
 
     @Override
     public int getMaxPatternPushMultiplier(IPatternDetails patternDetails, int maxMultiplier) {
-        if (maxMultiplier <= 0 || !(patternDetails instanceof IAssemblerPattern) || !this.patterns.contains(patternDetails) || this.cluster == null || this.cluster.isBusy()) {
+        if (maxMultiplier <= 0 || !this.canMergePatternPush(patternDetails)) {
             return 0;
         }
-        return 1;
+        return this.cluster.getMaxPatternPushMultiplier(maxMultiplier);
     }
 
     @Override

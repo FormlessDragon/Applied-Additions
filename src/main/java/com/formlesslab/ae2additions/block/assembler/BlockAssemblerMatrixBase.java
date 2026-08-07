@@ -89,8 +89,12 @@ public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase
     @Override
     public void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
         if (this.getRegistryName() != null) {
-            TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath());
+            TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath(), this::getTooltipArguments);
         }
+    }
+
+    protected Object[] getTooltipArguments(int line) {
+        return new Object[0];
     }
 
     @Override

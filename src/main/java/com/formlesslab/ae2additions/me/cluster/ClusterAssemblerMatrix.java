@@ -4,6 +4,7 @@ import ae2.api.config.Setting;
 import ae2.api.crafting.IPatternDetails;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.security.IActionSource;
+import ae2.api.networking.ticking.TickRateModulation;
 import ae2.api.stacks.KeyCounter;
 import ae2.api.util.IConfigManager;
 import ae2.me.cluster.IAECluster;
@@ -23,29 +24,39 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class ClusterAssemblerMatrix implements IAECluster {
+    private static final double MAX_QUEUE_PROGRESS = 100;
+
     private final BlockPos boundsMin;
     private final BlockPos boundsMax;
     private final List<TileAssemblerMatrixBase> tiles = new ArrayList<>();
     private final List<TileAssemblerMatrixPattern> patterns = new ArrayList<>();
-    private final Set<TileAssemblerMatrixCrafter> availableCrafters = Collections.newSetFromMap(new IdentityHashMap<>());
-    private final Set<TileAssemblerMatrixCrafter> busyCrafters = Collections.newSetFromMap(new IdentityHashMap<>());
-    private final Map<TileAssemblerMatrixCrafter, Integer> crafterStatusCache = new IdentityHashMap<>();
+    private final Set<TileAssemblerMatrixCrafter> crafters = Collections.newSetFromMap(new IdentityHashMap<>());
     private boolean isDestroyed;
     private ITextComponent myName;
     private MachineSource machineSrc;
     private IConfigManager manager = NullConfigManager.INSTANCE;
     private int speedCore;
+    private double queueProgress;
+    private boolean queueReboot = true;
+    private long lastQueueTick = Long.MIN_VALUE;
 
     public ClusterAssemblerMatrix(BlockPos boundsMin, BlockPos boundsMax) {
         this.boundsMin = boundsMin.toImmutable();
         this.boundsMax = boundsMax.toImmutable();
     }
 
+    private static int saturatedAdd(int left, int right) {
+        return left > Integer.MAX_VALUE - right ? Integer.MAX_VALUE : left + right;
+    }
+
+    private static int saturatedMultiply(int left, int right) {
+        return left > Integer.MAX_VALUE / right ? Integer.MAX_VALUE : left * right;
+    }
+
     public void addCrafter(TileAssemblerMatrixCrafter crafter) {
-        if (crafter.usedThread() < TileAssemblerMatrixCrafter.MAX_THREAD) {
-            this.availableCrafters.add(crafter);
-        } else {
-            this.busyCrafters.add(crafter);
+        this.crafters.add(crafter);
+        if (crafter.hasQueuedJobs()) {
+            this.queueProgress = Math.max(this.queueProgress, crafter.getSavedQueueProgress());
         }
     }
 
@@ -63,32 +74,43 @@ public class ClusterAssemblerMatrix implements IAECluster {
         return this.manager;
     }
 
-    public int getBusyCrafterAmount() {
-        int count = this.busyCrafters.size() * TileAssemblerMatrixCrafter.MAX_THREAD;
-        for (TileAssemblerMatrixCrafter crafter : this.availableCrafters) {
-            count += crafter.usedThread();
-        }
-        return count;
-    }
-
-    public int getAvailableThreadAmount() {
+    public int getQueuedJobAmount() {
         int count = 0;
-        for (TileAssemblerMatrixCrafter crafter : this.availableCrafters) {
-            count += TileAssemblerMatrixCrafter.MAX_THREAD - crafter.usedThread();
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            count = saturatedAdd(count, crafter.getQueuedJobCount());
         }
         return count;
     }
 
-    public void updateCrafter(TileAssemblerMatrixCrafter crafter) {
-        int used = crafter.usedThread();
-        Integer previous = this.crafterStatusCache.get(crafter);
-        if (previous != null && previous == used) {
-            return;
+    public int getUsedParallelAmount() {
+        int count = 0;
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            count = saturatedAdd(count, crafter.getUsedParallel());
         }
-        this.crafterStatusCache.put(crafter, used);
-        this.availableCrafters.remove(crafter);
-        this.busyCrafters.remove(crafter);
-        this.addCrafter(crafter);
+        return count;
+    }
+
+    public int getAvailableQueueAmount() {
+        return Math.max(0, getTotalQueueCapacity() - this.getQueuedJobAmount());
+    }
+
+    public int getAvailableParallelAmount() {
+        return Math.max(0, getTotalParallelCapacity() - this.getUsedParallelAmount());
+    }
+
+    public int getMaxPatternPushMultiplier(int maxMultiplier) {
+        if (maxMultiplier <= 0 || this.getAvailableQueueAmount() <= 0) {
+            return 0;
+        }
+        return Math.min(maxMultiplier, this.getAvailableParallelAmount());
+    }
+
+    public boolean hasQueuedJobs() {
+        return this.getQueuedJobAmount() > 0;
+    }
+
+    public double getQueueProgress() {
+        return this.queueProgress;
     }
 
     public void addPattern(TileAssemblerMatrixPattern pattern) {
@@ -141,6 +163,8 @@ public class ClusterAssemblerMatrix implements IAECluster {
             this.broadcastExistingSetting(setting, core);
         }
         this.updateName();
+        this.syncQueueProgress();
+        this.wakeWorkingCrafters();
     }
 
     @SuppressWarnings("unchecked")
@@ -157,20 +181,13 @@ public class ClusterAssemblerMatrix implements IAECluster {
         }
     }
 
-    @Nullable
-    private TileAssemblerMatrixCrafter getAvailableCrafter() {
-        for (TileAssemblerMatrixCrafter crafter : this.availableCrafters) {
-            return crafter;
-        }
-        return null;
-    }
-
     @Override
     public void destroy() {
         if (this.isDestroyed) {
             return;
         }
         this.isDestroyed = true;
+        this.syncQueueProgress();
         boolean ownsModification = !MBCalculator.isModificationInProgress();
         if (ownsModification) {
             MBCalculator.setModificationInProgress(this);
@@ -222,29 +239,81 @@ public class ClusterAssemblerMatrix implements IAECluster {
     }
 
     public boolean isBusy() {
-        return this.availableCrafters.isEmpty();
+        return this.getAvailableQueueAmount() <= 0 || this.getAvailableParallelAmount() <= 0;
     }
 
     public void cancelJobs() {
-        for (TileAssemblerMatrixCrafter crafter : this.availableCrafters) {
-            crafter.stop();
-            this.updateCrafter(crafter);
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            crafter.cancelQueuedJobs();
         }
-        for (TileAssemblerMatrixCrafter crafter : new ArrayList<>(this.busyCrafters)) {
-            crafter.stop();
-            this.updateCrafter(crafter);
-        }
+        this.queueProgress = 0;
+        this.queueReboot = true;
+        this.lastQueueTick = Long.MIN_VALUE;
+        this.syncQueueProgress();
+        this.wakeWorkingCrafters();
     }
 
     public boolean pushCraftingJob(IPatternDetails patternDetails, KeyCounter[] inputHolder, int craftCount) {
-        if (craftCount != 1) {
+        if (craftCount <= 0 || this.getAvailableQueueAmount() <= 0 || craftCount > this.getAvailableParallelAmount()) {
             return false;
         }
-        TileAssemblerMatrixCrafter crafter = this.getAvailableCrafter();
+
+        TileAssemblerMatrixCrafter crafter = null;
+        for (TileAssemblerMatrixCrafter candidate : this.crafters) {
+            if (candidate.hasQueueSpace() && (crafter == null || candidate.getQueuedJobCount() < crafter.getQueuedJobCount())) {
+                crafter = candidate;
+            }
+        }
         if (crafter == null) {
             return false;
         }
-        return crafter.pushJob(patternDetails, inputHolder);
+
+        boolean firstJob = !this.hasQueuedJobs();
+        if (!crafter.pushJob(patternDetails, inputHolder, craftCount)) {
+            return false;
+        }
+        if (firstJob) {
+            this.queueProgress = 0;
+            this.queueReboot = true;
+            this.lastQueueTick = Long.MIN_VALUE;
+        }
+        this.syncQueueProgress();
+        this.wakeWorkingCrafters();
+        return true;
+    }
+
+    public TickRateModulation tickCraftingQueue(TileAssemblerMatrixCrafter tickingCrafter, int ticksSinceLastCall) {
+        if (!this.hasQueuedJobs()) {
+            return TickRateModulation.SLEEP;
+        }
+
+        if (tickingCrafter.getWorld() != null) {
+            long worldTick = tickingCrafter.getWorld().getTotalWorldTime();
+            if (worldTick == this.lastQueueTick) {
+                return TickRateModulation.FASTER;
+            }
+            this.lastQueueTick = worldTick;
+        }
+
+        if (this.queueReboot) {
+            ticksSinceLastCall = 1;
+            this.queueReboot = false;
+        }
+        this.queueProgress += tickingCrafter.advanceQueueTimer(this.speedCore, ticksSinceLastCall);
+        this.syncQueueProgress();
+        if (this.queueProgress < MAX_QUEUE_PROGRESS) {
+            return TickRateModulation.FASTER;
+        }
+
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            crafter.completeQueuedJobs();
+        }
+        this.queueProgress = 0;
+        this.queueReboot = true;
+        this.lastQueueTick = Long.MIN_VALUE;
+        this.syncQueueProgress();
+        this.wakeWorkingCrafters();
+        return TickRateModulation.IDLE;
     }
 
     public void breakCluster() {
@@ -268,6 +337,28 @@ public class ClusterAssemblerMatrix implements IAECluster {
 
     public ITextComponent getName() {
         return this.myName;
+    }
+
+    private int getTotalQueueCapacity() {
+        return saturatedMultiply(this.crafters.size(), TileAssemblerMatrixCrafter.getMaxQueueSize());
+    }
+
+    private int getTotalParallelCapacity() {
+        return saturatedMultiply(this.crafters.size(), TileAssemblerMatrixCrafter.getMaxParallel());
+    }
+
+    private void syncQueueProgress() {
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            crafter.setSavedQueueProgress(this.queueProgress);
+        }
+    }
+
+    private void wakeWorkingCrafters() {
+        for (TileAssemblerMatrixCrafter crafter : this.crafters) {
+            if (crafter.hasQueuedJobs() || crafter.hasBufferedOutputs()) {
+                crafter.wakeForWork();
+            }
+        }
     }
 
     @Nullable

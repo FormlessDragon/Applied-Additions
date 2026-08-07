@@ -59,11 +59,23 @@ public final class Configurations {
         @Config.RangeInt(min = 5, max = 16)
         public int maxSize = 7;
 
-        @Config.Name("acceleratorThreads")
-        @Config.LangKey("config.ae2additions.quantum_computer.accelerator_threads")
-        @Config.Comment("Threads provided by each Quantum Computer Accelerator")
-        @Config.RangeInt(min = 1, max = 16)
-        public int acceleratorThreads = 8;
+        @Config.Name("coreStorageMb")
+        @Config.LangKey("config.ae2additions.quantum_computer.core_storage_mb")
+        @Config.Comment("Crafting storage in MiB provided by the Quantum Computer Core")
+        @Config.RangeInt(min = 1, max = 1048576)
+        public int coreStorageMb = 256;
+
+        @Config.Name("coreParallelism")
+        @Config.LangKey("config.ae2additions.quantum_computer.core_parallelism")
+        @Config.Comment("Parallel crafting tasks provided by the Quantum Computer Core")
+        @Config.RangeInt(min = 1, max = 1024)
+        public int coreParallelism = 8;
+
+        @Config.Name("acceleratorParallelism")
+        @Config.LangKey("config.ae2additions.quantum_computer.accelerator_parallelism")
+        @Config.Comment("Parallel crafting tasks provided by each Quantum Computer Accelerator")
+        @Config.RangeInt(min = 1, max = 1024)
+        public int acceleratorParallelism = 8;
 
         @Config.Name("maxMultiThreaders")
         @Config.LangKey("config.ae2additions.quantum_computer.max_multi_threaders")
@@ -80,19 +92,14 @@ public final class Configurations {
         @Config.Name("multiThreaderMultiplier")
         @Config.LangKey("config.ae2additions.quantum_computer.multi_threader_multiplier")
         @Config.Comment("Multiplication factor for Quantum Computer Multi Threaders")
-        @Config.RangeInt(min = 2, max = 8)
+        @Config.RangeInt(min = 1, max = 64)
         public int multiThreaderMultiplier = 4;
 
         @Config.Name("dataEntanglerMultiplier")
         @Config.LangKey("config.ae2additions.quantum_computer.data_entangler_multiplier")
         @Config.Comment("Multiplication factor for Quantum Computer Data Entanglers")
-        @Config.RangeInt(min = 2, max = 8)
+        @Config.RangeInt(min = 1, max = 64)
         public int dataEntanglerMultiplier = 4;
-
-        @Config.Name("enableEffects")
-        @Config.LangKey("config.ae2additions.quantum_computer.enable_effects")
-        @Config.Comment("Enable visual effects for Quantum Computer machines")
-        public boolean enableEffects = true;
     }
 
     public static final class AssemblerMatrix {
@@ -101,6 +108,30 @@ public final class Configurations {
         @Config.Comment("Maximum outer dimensions of the Assembler Matrix multiblock")
         @Config.RangeInt(min = 3, max = 16)
         public int maxSize = 7;
+
+        @Config.Name("crafterQueueSize")
+        @Config.LangKey("config.ae2additions.assembler_matrix.crafter_queue_size")
+        @Config.Comment("Queue slots provided by each Assembler Matrix Craft Core")
+        @Config.RangeInt(min = 1, max = 16)
+        public int crafterQueueSize = 8;
+
+        @Config.Name("crafterParallelism")
+        @Config.LangKey("config.ae2additions.assembler_matrix.crafter_parallelism")
+        @Config.Comment("Shared parallel crafting capacity provided by each Assembler Matrix Craft Core")
+        @Config.RangeInt(min = 1, max = 1048576)
+        public int crafterParallelism = 64;
+
+        @Config.Name("crafterIdlePowerUsage")
+        @Config.LangKey("config.ae2additions.assembler_matrix.crafter_idle_power_usage")
+        @Config.Comment("Idle power usage of each Assembler Matrix Craft Core in AE/t")
+        @Config.RangeDouble(min = 0.0, max = 1000000.0)
+        public double crafterIdlePowerUsage = 1.0;
+
+        @Config.Name("speedIdlePowerUsage")
+        @Config.LangKey("config.ae2additions.assembler_matrix.speed_idle_power_usage")
+        @Config.Comment("Idle power usage of each Assembler Matrix Speed Core in AE/t")
+        @Config.RangeDouble(min = 0.0, max = 1000000.0)
+        public double speedIdlePowerUsage = 1.0;
     }
 
     public static final class Client {

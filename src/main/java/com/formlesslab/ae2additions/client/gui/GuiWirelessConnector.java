@@ -81,11 +81,11 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
         int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
 
         Point statusPos = this.resolveWidget("statusText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.status", new TextComponentTranslation(statusKey(this.container.status)).getFormattedText()).getFormattedText(), statusPos.x(), statusPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.status", new TextComponentTranslation(statusKey(this.container.status)).getUnformattedText()).getUnformattedText(), statusPos.x(), statusPos.y(), textColor);
         Point powerPos = this.resolveWidget("powerText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.power", Platform.formatPower(this.container.powerUse, true)).getFormattedText(), powerPos.x(), powerPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.power", Platform.formatPower(this.container.powerUse, true)).getUnformattedText(), powerPos.x(), powerPos.y(), textColor);
         Point channelsPos = this.resolveWidget("channelsText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.channels", this.container.usedChannels, this.container.maxChannels).getFormattedText(), channelsPos.x(), channelsPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.channels", this.container.usedChannels, this.container.maxChannels).getUnformattedText(), channelsPos.x(), channelsPos.y(), textColor);
 
         drawRemotePreview(textColor);
     }
@@ -94,7 +94,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
         Rectangle preview = this.resolveWidgetBounds("remotePreview");
         drawRect(preview.x, preview.y, preview.x + preview.width, preview.y + preview.height, 0x66000000);
         if (!this.container.hasRemote) {
-            String text = new TextComponentTranslation("gui.ae2additions.remote.none").getFormattedText();
+            String text = new TextComponentTranslation("gui.ae2additions.remote.none").getUnformattedText();
             this.fontRenderer.drawString(text, preview.x + (preview.width - this.fontRenderer.getStringWidth(text)) / 2, preview.y + (preview.height - this.fontRenderer.FONT_HEIGHT) / 2, textColor);
             return;
         }
@@ -103,7 +103,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
         RemoteBlockRenderer.renderScene(pos, preview.x + preview.width / 2, preview.y + 35, 17.0F * this.remoteZoom, this.remoteRotationX, this.remoteRotationY, this.remoteOffsetX, this.remoteOffsetY, this.guiLeft + preview.x, this.guiTop + preview.y, preview.width, preview.height);
 
         Point remoteTextPos = this.resolveWidget("remoteText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.remote", pos.getX(), pos.getY(), pos.getZ()).getFormattedText(), remoteTextPos.x(), remoteTextPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.remote", pos.getX(), pos.getY(), pos.getZ()).getUnformattedText(), remoteTextPos.x(), remoteTextPos.y(), textColor);
     }
 
     private void highlightRemote() {

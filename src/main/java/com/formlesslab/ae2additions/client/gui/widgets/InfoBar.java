@@ -113,7 +113,7 @@ public class InfoBar {
             this.scale = scale;
             this.xPos = xPos;
             this.yPos = yPos;
-            this.width = Math.round(Minecraft.getMinecraft().fontRenderer.getStringWidth(text.getFormattedText()) * scale);
+            this.width = Math.round(Minecraft.getMinecraft().fontRenderer.getStringWidth(text.getUnformattedText()) * scale);
             this.height = Math.round(Minecraft.getMinecraft().fontRenderer.FONT_HEIGHT * scale);
         }
 
@@ -132,7 +132,7 @@ public class InfoBar {
             GlStateManager.pushMatrix();
             GlStateManager.translate(this.xPos, this.yPos, 0.0F);
             GlStateManager.scale(this.scale, this.scale, 1.0F);
-            Minecraft.getMinecraft().fontRenderer.drawString(this.text.getFormattedText(), 0, 0, this.color);
+            Minecraft.getMinecraft().fontRenderer.drawString(this.text.getUnformattedText(), 0, 0, this.color);
             GlStateManager.popMatrix();
         }
     }

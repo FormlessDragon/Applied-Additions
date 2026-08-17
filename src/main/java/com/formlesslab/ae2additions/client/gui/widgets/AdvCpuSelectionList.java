@@ -171,7 +171,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
             }
 
             ITextComponent name = getCpuName(cpu);
-            drawScaledString(name.getFormattedText(), x + 3, y + 2, this.textColor.toARGB());
+            drawScaledString(name.getUnformattedText(), x + 3, y + 2, this.textColor.toARGB());
 
             InfoBar infoBar = new InfoBar();
             GenericStack currentJob = cpu.currentJob();

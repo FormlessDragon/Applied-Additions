@@ -14,7 +14,7 @@ public final class TooltipHelper {
     public static void addTranslatedLines(List<String> tooltip, String keyPrefix, IntFunction<Object[]> arguments) {
         for (int line = 1; ; line++) {
             String key = keyPrefix + "." + String.format("%02d", line);
-            String text = new TextComponentTranslation(key, arguments.apply(line)).getFormattedText();
+            String text = new TextComponentTranslation(key, arguments.apply(line)).getUnformattedText();
             if ((key + "§r").equals(text) || line > 10) {
                 return;
             }

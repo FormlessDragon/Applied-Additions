@@ -22,7 +22,7 @@ public class ContainerQuantumComputer extends ContainerCraftingCPU {
     private static final String ACTION_CANCEL_CRAFTING = "cancelCrafting";
 
     private static final QuantumComputerList EMPTY_CPU_LIST = new QuantumComputerList(Collections.emptyList());
-    private static final Comparator<QuantumComputerEntry> CPU_COMPARATOR = Comparator.comparing((QuantumComputerEntry e) -> e.name() == null).thenComparing(e -> e.name() != null ? e.name().getFormattedText() : "").thenComparingInt(QuantumComputerEntry::clusterId).thenComparing(QuantumComputerEntry::isRemainingCapacity).thenComparingInt(QuantumComputerEntry::serial);
+    private static final Comparator<QuantumComputerEntry> CPU_COMPARATOR = Comparator.comparing((QuantumComputerEntry e) -> e.name() == null).thenComparing(e -> e.name() != null ? e.name().getUnformattedText() : "").thenComparingInt(QuantumComputerEntry::clusterId).thenComparing(QuantumComputerEntry::isRemainingCapacity).thenComparingInt(QuantumComputerEntry::serial);
     private final QuantumComputerHost host;
     @GuiSync(8)
     public QuantumComputerList cpuList = EMPTY_CPU_LIST;

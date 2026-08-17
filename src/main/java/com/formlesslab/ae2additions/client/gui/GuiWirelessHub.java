@@ -71,9 +71,9 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
         int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
         Point powerPos = this.resolveWidget("powerText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.power", Platform.formatPower(this.container.powerUse, true)).getFormattedText(), powerPos.x(), powerPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.power", Platform.formatPower(this.container.powerUse, true)).getUnformattedText(), powerPos.x(), powerPos.y(), textColor);
         Point channelsPos = this.resolveWidget("channelsText");
-        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.channels", this.container.usedChannels, this.container.maxChannels).getFormattedText(), channelsPos.x(), channelsPos.y(), textColor);
+        this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.channels", this.container.usedChannels, this.container.maxChannels).getUnformattedText(), channelsPos.x(), channelsPos.y(), textColor);
 
         ContainerWirelessHub.PortState ports = this.container.ports;
         for (int i = 0; i < TileWirelessHub.MAX_PORTS; i++) {
@@ -111,7 +111,7 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
         } else {
             lines.add(new TextComponentTranslation("gui.ae2additions.hub.empty_port.tooltip"));
         }
-        return lines.stream().map(ITextComponent::getFormattedText).collect(Collectors.toList());
+        return lines.stream().map(ITextComponent::getUnformattedText).collect(Collectors.toList());
     }
 
     private void showHighlightMessage(int port) {

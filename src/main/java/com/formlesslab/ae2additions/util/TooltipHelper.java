@@ -15,7 +15,7 @@ public final class TooltipHelper {
         for (int line = 1; ; line++) {
             String key = keyPrefix + "." + String.format("%02d", line);
             String text = new TextComponentTranslation(key, arguments.apply(line)).getUnformattedText();
-            if ((key + "§r").equals(text) || line > 10) {
+            if (key.equals(text) || line > 10) {
                 return;
             }
             tooltip.add(TextFormatting.GRAY + text);

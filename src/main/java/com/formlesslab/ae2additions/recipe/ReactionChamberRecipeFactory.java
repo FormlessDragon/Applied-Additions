@@ -32,8 +32,7 @@ public class ReactionChamberRecipeFactory implements IRecipeFactory {
         }
 
         JsonObject inputFluid = JsonUtils.getJsonObject(json, "input_fluid");
-        Fluid fluid = readFluid(JsonUtils.getString(inputFluid, "ingredient"));
-        int fluidAmount = JsonUtils.getInt(inputFluid, "amount");
+        FluidStack fluid = new FluidStack(readFluid(JsonUtils.getString(inputFluid, "ingredient")), JsonUtils.getInt(inputFluid, "amount"));
         int energy = JsonUtils.getInt(json, "input_energy");
 
         ItemStack itemOutput = ItemStack.EMPTY;
@@ -45,11 +44,28 @@ public class ReactionChamberRecipeFactory implements IRecipeFactory {
             JsonObject output = JsonUtils.getJsonObject(json, "fluidOutput");
             fluidOutput = new FluidStack(readFluid(JsonUtils.getString(output, "id")), JsonUtils.getInt(output, "amount"));
         }
-        if (itemOutput.isEmpty() && fluidOutput == null) {
-            throw new JsonParseException("Reaction chamber recipe must define itemOutput or fluidOutput");
-        }
 
-        return new ReactionChamberRecipe(items, fluid, fluidAmount, energy, itemOutput, fluidOutput);
+        return create(items, fluid, energy, itemOutput, fluidOutput);
+    }
+
+    public static ReactionChamberRecipe create(List<ReactionChamberRecipe.SizedIngredient> items,
+                                               FluidStack inputFluid, int energy,
+                                               ItemStack itemOutput, FluidStack fluidOutput) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Reaction chamber recipe must define at least one item input");
+        }
+        if (inputFluid == null || inputFluid.getFluid() == null || inputFluid.amount <= 0) {
+            throw new IllegalArgumentException("Reaction chamber recipe must define a positive input fluid amount");
+        }
+        if (energy <= 0) {
+            throw new IllegalArgumentException("Reaction chamber recipe must define positive input energy");
+        }
+        if ((itemOutput == null || itemOutput.isEmpty()) && (fluidOutput == null || fluidOutput.amount <= 0)) {
+            throw new IllegalArgumentException("Reaction chamber recipe must define itemOutput or fluidOutput");
+        }
+        return new ReactionChamberRecipe(items, inputFluid.getFluid(), inputFluid.amount, energy,
+                itemOutput == null ? ItemStack.EMPTY : itemOutput.copy(),
+                fluidOutput == null ? null : fluidOutput.copy());
     }
 
     private static Ingredient readIngredient(JsonElement element, JsonContext ctx) {

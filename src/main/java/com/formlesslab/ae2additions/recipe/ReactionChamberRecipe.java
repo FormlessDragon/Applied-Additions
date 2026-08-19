@@ -128,6 +128,16 @@ public class ReactionChamberRecipe {
         return this.fluidOutput == null ? null : this.fluidOutput.copy();
     }
 
+    public boolean hasItemOutput(ItemStack output) {
+        return this.isItemOutput() && output != null && !output.isEmpty()
+                && ItemStack.areItemsEqual(this.itemOutput, output)
+                && ItemStack.areItemStackTagsEqual(this.itemOutput, output);
+    }
+
+    public boolean hasFluidOutput(FluidStack output) {
+        return this.fluidOutput != null && output != null && this.fluidOutput.isFluidEqual(output);
+    }
+
     public int getEnergy() {
         return this.energy;
     }

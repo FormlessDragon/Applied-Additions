@@ -21,6 +21,10 @@ repositories {
         url = uri("https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/")
     }
     maven {
+        name = "ModMaven"
+        url  = uri("https://modmaven.dev/")
+    }
+    maven {
         name = "Jitpack"
         url = uri("https://jitpack.io")
     }

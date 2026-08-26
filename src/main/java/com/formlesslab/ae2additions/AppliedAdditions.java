@@ -1,5 +1,6 @@
 package com.formlesslab.ae2additions;
 
+import com.formlesslab.ae2additions.cell.InfinityCellInventory;
 import com.formlesslab.ae2additions.client.model.AssemblerGlassModel;
 import com.formlesslab.ae2additions.client.render.QuantumComputerModelOverride;
 import com.formlesslab.ae2additions.client.render.WirelessHighlightHandler;
@@ -32,6 +33,7 @@ public class AppliedAdditions {
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         ModContent.registerTileEntities();
+        InfinityCellInventory.registerHandler();
         ModNetworks.init();
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {

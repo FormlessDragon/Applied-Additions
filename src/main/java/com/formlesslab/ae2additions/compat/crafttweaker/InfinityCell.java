@@ -107,7 +107,7 @@ public final class InfinityCell {
         if (suppliers == null || suppliers.isEmpty()) {
             throw new IllegalArgumentException("An infinity cell needs at least one key");
         }
-        ItemStack stack = new ItemStack(ModContent.registerInfinityCell(name, suppliers, displayName));
+        ItemStack stack = ModContent.registerInfinityCell(name, suppliers, displayName);
         return CraftTweakerMC.getIItemStack(stack);
     }
 }

@@ -16,6 +16,7 @@ import com.formlesslab.ae2additions.block.quantum.BlockAAECraftingUnit;
 import com.formlesslab.ae2additions.block.reaction.BlockReactionChamber;
 import com.formlesslab.ae2additions.block.wireless.BlockWirelessConnector;
 import com.formlesslab.ae2additions.block.wireless.BlockWirelessHub;
+import com.formlesslab.ae2additions.cell.InfinityCellContents;
 import com.formlesslab.ae2additions.fluid.QuantumInfusionFluid;
 import com.formlesslab.ae2additions.item.ItemInfinityCell;
 import com.formlesslab.ae2additions.item.ItemWirelessConnectorUpgrade;
@@ -64,8 +65,9 @@ public final class ModContent {
     public static final Item QUANTUM_ALLOY_PLATE;
     public static final Item QUANTUM_PROCESSOR;
     public static final Item QUANTUM_STORAGE_COMPONENT;
-    public static final ItemInfinityCell INFINITY_COBBLESTONE_CELL;
-    public static final ItemInfinityCell INFINITY_WATER_CELL;
+    public static final ItemInfinityCell INFINITY_CELL;
+    public static final ItemStack INFINITY_COBBLESTONE_CELL;
+    public static final ItemStack INFINITY_WATER_CELL;
     public static final BlockReactionChamber REACTION_CHAMBER;
     public static final QuantumInfusionFluid.QuantumInfusionBlock QUANTUM_INFUSION_BLOCK;
     public static final BlockQuantumAlloyBlock QUANTUM_ALLOY_BLOCK;
@@ -84,8 +86,8 @@ public final class ModContent {
     private static final List<Item> ITEMS;
     private static final List<ModelEntry> MODELS;
     private static final List<TileEntityEntry> TILE_ENTITIES;
+    private static final Map<String, ItemStack> INFINITY_CELL_VARIANTS;
     private static final Map<AAECraftingUnitType, BlockAAECraftingUnit> QUANTUM_BLOCKS = new EnumMap<>(AAECraftingUnitType.class);
-    private static boolean itemRegistryClosed;
 
     static {
         QuantumInfusionFluid.init();
@@ -106,8 +108,7 @@ public final class ModContent {
         QUANTUM_ALLOY_PLATE = new Item();
         QUANTUM_PROCESSOR = new Item();
         QUANTUM_STORAGE_COMPONENT = new Item();
-        INFINITY_COBBLESTONE_CELL = new ItemInfinityCell(() -> AEItemKey.of(new ItemStack(Blocks.COBBLESTONE)));
-        INFINITY_WATER_CELL = new ItemInfinityCell(() -> AEFluidKey.of(Objects.requireNonNull(FluidRegistry.WATER, "minecraft:water is unavailable")));
+        INFINITY_CELL = new ItemInfinityCell();
         REACTION_CHAMBER = new BlockReactionChamber();
         QUANTUM_INFUSION_BLOCK = new QuantumInfusionFluid.QuantumInfusionBlock();
         QUANTUM_ALLOY_BLOCK = new BlockQuantumAlloyBlock();
@@ -126,6 +127,7 @@ public final class ModContent {
         ITEMS = new ArrayList<>();
         MODELS = new ArrayList<>();
         TILE_ENTITIES = new ArrayList<>();
+        INFINITY_CELL_VARIANTS = new LinkedHashMap<>();
 
         registerItem(WIRELESS_TOOL, "wireless_tool");
         registerItem(WIRELESS_CONNECTOR_UPGRADE, "wireless_connector_upgrade");
@@ -133,8 +135,7 @@ public final class ModContent {
         registerItem(PRINTED_QUANTUM_PROCESSOR, "printed_quantum_processor");
         registerItem(QUANTUM_PROCESSOR, "quantum_processor");
         registerItem(QUANTUM_STORAGE_COMPONENT, "quantum_storage_component");
-        registerItem(INFINITY_COBBLESTONE_CELL, "infinity_cell");
-        registerItem(INFINITY_WATER_CELL, "infinity_cell");
+        registerItem(INFINITY_CELL, "infinity_cell");
         registerItem(QUANTUM_INFUSED_DUST, "quantum_infused_dust");
         registerItem(SHATTERED_SINGULARITY, "shattered_singularity");
         registerItem(QUANTUM_ALLOY, "quantum_alloy");
@@ -175,6 +176,9 @@ public final class ModContent {
         registerTileEntity(TileAssemblerMatrixPattern.class, "assembler_matrix_pattern");
         registerTileEntity(TileAssemblerMatrixCrafter.class, "assembler_matrix_crafter");
         registerTileEntity(TileAssemblerMatrixSpeed.class, "assembler_matrix_speed");
+
+        INFINITY_COBBLESTONE_CELL = registerBuiltinInfinityCell("infinity_cobblestone", Collections.singletonList(Objects.requireNonNull(AEItemKey.of(new ItemStack(Blocks.COBBLESTONE)), "Unable to create cobblestone key")));
+        INFINITY_WATER_CELL = registerBuiltinInfinityCell("infinity_water", Collections.singletonList(Objects.requireNonNull(AEFluidKey.of(Objects.requireNonNull(FluidRegistry.WATER, "minecraft:water is unavailable")), "Unable to create water key")));
     }
 
     public static void registerUpgrades() {
@@ -210,24 +214,45 @@ public final class ModContent {
     }
 
     /**
-     * Registers a script-defined cell containing one or more AE keys.
+     * Creates and records an NBT-backed variant of the single infinity-cell item.
+     * This method never registers a new Forge item.
      */
-    public static synchronized ItemInfinityCell registerInfinityCell(String name, Collection<? extends Supplier<? extends AEKey>> keySuppliers, String displayName) {
+    public static synchronized ItemStack registerInfinityCell(String name, Collection<? extends Supplier<? extends AEKey>> keySuppliers, String displayName) {
+        String variantId = validateVariantId(name);
         Objects.requireNonNull(keySuppliers, "keySuppliers");
-        ResourceLocation registryName = scriptId(name);
-        Item existing = findItem(registryName);
+
+        List<AEKey> keys = new ArrayList<>(keySuppliers.size());
+        for (Supplier<? extends AEKey> supplier : keySuppliers) {
+            keys.add(Objects.requireNonNull(Objects.requireNonNull(supplier, "keySupplier").get(), "Infinity cell key supplier returned null"));
+        }
+        ItemStack candidate = InfinityCellContents.createStack(INFINITY_CELL, keys, variantId, displayName);
+
+        ItemStack existing = INFINITY_CELL_VARIANTS.get(variantId);
         if (existing != null) {
-            if (existing instanceof ItemInfinityCell cell) {
-                return cell;
+            if (ItemStack.areItemStacksEqual(existing, candidate)) {
+                return existing.copy();
             }
-            throw new IllegalArgumentException("An item is already registered as " + registryName);
+            throw new IllegalArgumentException("An infinity-cell variant is already registered as " + variantId);
         }
-        if (itemRegistryClosed) {
-            throw new IllegalStateException("Infinity cells must be registered before the item registry closes");
+        INFINITY_CELL_VARIANTS.put(variantId, candidate.copy());
+        return candidate;
+    }
+
+    /**
+     * Returns defensive copies for the creative tab and JEI integration.
+     */
+    public static synchronized List<ItemStack> getInfinityCellVariants() {
+        List<ItemStack> result = new ArrayList<>(INFINITY_CELL_VARIANTS.size());
+        for (ItemStack stack : INFINITY_CELL_VARIANTS.values()) {
+            result.add(stack.copy());
         }
-        ItemInfinityCell cell = new ItemInfinityCell(keySuppliers, displayName);
-        registerItem(cell, registryName, "infinity_cell");
-        return cell;
+        return Collections.unmodifiableList(result);
+    }
+
+    private static ItemStack registerBuiltinInfinityCell(String name, Collection<? extends AEKey> keys) {
+        ItemStack stack = InfinityCellContents.createStack(INFINITY_CELL, keys, name, null);
+        INFINITY_CELL_VARIANTS.put(name, stack.copy());
+        return stack;
     }
 
     public static ResourceLocation id(String path) {
@@ -242,7 +267,6 @@ public final class ModContent {
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         event.getRegistry().registerAll(ITEMS.toArray(new Item[0]));
-        itemRegistryClosed = true;
     }
 
     @SideOnly(Side.CLIENT)
@@ -324,24 +348,11 @@ public final class ModContent {
         return item;
     }
 
-    private static ResourceLocation scriptId(String name) {
+    private static String validateVariantId(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Infinity cell name cannot be empty");
+            throw new IllegalArgumentException("Infinity-cell variant name cannot be empty");
         }
-        ResourceLocation parsed = name.indexOf(':') >= 0 ? new ResourceLocation(name) : id(name);
-        if (!Reference.MOD_ID.equals(parsed.getNamespace())) {
-            throw new IllegalArgumentException("Script-defined cells must use the " + Reference.MOD_ID + " namespace");
-        }
-        return parsed;
-    }
-
-    private static Item findItem(ResourceLocation registryName) {
-        for (Item item : ITEMS) {
-            if (registryName.equals(item.getRegistryName())) {
-                return item;
-            }
-        }
-        return null;
+        return name.trim();
     }
 
     private record ModelEntry(Item item, String modelName) {

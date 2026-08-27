@@ -20,14 +20,18 @@ import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * AE2 storage view for one NBT-configured infinity-cell stack.
+ */
 public final class InfinityCellInventory implements StorageCell {
     public static final ICellHandler HANDLER = new Handler();
+
     private final ItemStack stack;
     private final Set<AEKey> keys;
 
-    private InfinityCellInventory(ItemStack stack, ItemInfinityCell cell) {
-        this.stack = stack;
-        this.keys = new LinkedHashSet<>(cell.getKeys());
+    private InfinityCellInventory(ItemStack stack) {
+        this.stack = stack.copy();
+        this.keys = new LinkedHashSet<>(InfinityCellContents.readKeys(stack));
     }
 
     public static void registerHandler() {
@@ -36,7 +40,7 @@ public final class InfinityCellInventory implements StorageCell {
 
     @Override
     public CellState getStatus() {
-        return CellState.NOT_EMPTY;
+        return keys.isEmpty() ? CellState.EMPTY : CellState.NOT_EMPTY;
     }
 
     @Override
@@ -75,10 +79,12 @@ public final class InfinityCellInventory implements StorageCell {
 
     @Override
     public void persist() {
+        // The configured key list is immutable for the lifetime of the stack.
     }
 
     @Override
     public void addListener(MEStorageChangeListener listener, Object verificationToken) {
+        // Contents never change, so there are no listeners to notify.
     }
 
     @Override
@@ -88,16 +94,13 @@ public final class InfinityCellInventory implements StorageCell {
     private static final class Handler implements ICellHandler {
         @Override
         public boolean isCell(ItemStack stack) {
-            return stack != null && !stack.isEmpty() && stack.getItem() instanceof ItemInfinityCell;
+            return stack != null && !stack.isEmpty() && stack.getItem() instanceof ItemInfinityCell && InfinityCellContents.isConfigured(stack);
         }
 
         @Override
         @Nullable
         public StorageCell getCellInventory(ItemStack stack, @Nullable ISaveProvider host) {
-            if (!isCell(stack)) {
-                return null;
-            }
-            return new InfinityCellInventory(stack, (ItemInfinityCell) stack.getItem());
+            return isCell(stack) ? new InfinityCellInventory(stack) : null;
         }
     }
 }

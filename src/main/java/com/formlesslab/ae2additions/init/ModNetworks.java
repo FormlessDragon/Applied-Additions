@@ -1,6 +1,6 @@
 package com.formlesslab.ae2additions.init;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.network.CAssemblerMatrixCancel;
 import com.formlesslab.ae2additions.network.CAssemblerMatrixPatternMode;
 import com.formlesslab.ae2additions.network.CReactionChamberOutputSides;
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 
 public final class ModNetworks {
-    public static final SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(Reference.MOD_ID);
+    public static final SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(Tags.MOD_ID);
 
     public static final int QUANTUM_TASK_CANCEL = 0;
     public static final int QUANTUM_CPU_SELECTION = 1;

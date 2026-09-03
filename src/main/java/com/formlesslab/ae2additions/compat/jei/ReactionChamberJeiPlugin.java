@@ -1,6 +1,6 @@
 package com.formlesslab.ae2additions.compat.jei;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.client.gui.GuiReactionChamber;
 import com.formlesslab.ae2additions.init.ModContent;
 import com.formlesslab.ae2additions.init.ModRecipes;
@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 
 @JEIPlugin
 public class ReactionChamberJeiPlugin implements IModPlugin {
-    public static final String REACTION_CHAMBER_UID = Reference.MOD_ID + ".reaction_chamber";
+    public static final String REACTION_CHAMBER_UID = Tags.MOD_ID + ".reaction_chamber";
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registry) {

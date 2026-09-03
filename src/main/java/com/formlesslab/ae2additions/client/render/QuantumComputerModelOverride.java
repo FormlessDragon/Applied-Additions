@@ -1,7 +1,7 @@
 package com.formlesslab.ae2additions.client.render;
 
 import ae2.core.registries.CraftingUnitClientRegistry;
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.api.AAECraftingUnitType;
 import com.formlesslab.ae2additions.client.model.AAECraftingUnitModelProvider;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -17,7 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID, value = Side.CLIENT)
+@Mod.EventBusSubscriber(modid = Tags.MOD_ID, value = Side.CLIENT)
 public final class QuantumComputerModelOverride {
     public static final QuantumComputerModelOverride INSTANCE = new QuantumComputerModelOverride();
 
@@ -32,7 +32,7 @@ public final class QuantumComputerModelOverride {
     }
 
     private static void putModel(IRegistry<ModelResourceLocation, IBakedModel> registry, String path, String variant, IBakedModel model) {
-        registry.putObject(new ModelResourceLocation(new ResourceLocation(Reference.MOD_ID, path), variant), model);
+        registry.putObject(new ModelResourceLocation(new ResourceLocation(Tags.MOD_ID, path), variant), model);
     }
 
     @SubscribeEvent

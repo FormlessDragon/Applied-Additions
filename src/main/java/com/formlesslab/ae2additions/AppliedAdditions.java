@@ -19,11 +19,11 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = Reference.MOD_ID, name = Reference.MOD_NAME, version = Reference.VERSION, acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:ae2")
+@Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION, acceptedMinecraftVersions = "[1.12.2]", dependencies = "required-after:ae2")
 public class AppliedAdditions {
 
-    public static final Logger LOGGER = LogManager.getLogger(Reference.MOD_NAME);
-    @Mod.Instance(Reference.MOD_ID)
+    public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
+    @Mod.Instance(Tags.MOD_ID)
     public static AppliedAdditions INSTANCE;
 
     static {
@@ -41,7 +41,7 @@ public class AppliedAdditions {
             MinecraftForge.EVENT_BUS.register(QuantumComputerModelOverride.INSTANCE);
             MinecraftForge.EVENT_BUS.register(WirelessHighlightHandler.INSTANCE);
         }
-        LOGGER.info("{} initialized", Reference.MOD_NAME);
+        LOGGER.info("{} initialized", Tags.MOD_NAME);
     }
 
     @Mod.EventHandler

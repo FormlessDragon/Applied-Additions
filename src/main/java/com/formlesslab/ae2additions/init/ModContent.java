@@ -8,7 +8,7 @@ import ae2.core.definitions.AEItems;
 import ae2.recipes.AERecipeTypes;
 import ae2.recipes.handlers.InscriberProcessType;
 import ae2.recipes.handlers.InscriberRecipe;
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.api.AAECraftingUnitType;
 import com.formlesslab.ae2additions.block.assembler.*;
 import com.formlesslab.ae2additions.block.material.*;
@@ -50,7 +50,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import java.util.*;
 import java.util.function.Supplier;
 
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID)
+@Mod.EventBusSubscriber(modid = Tags.MOD_ID)
 public final class ModContent {
     public static final Item QUANTUM_INFUSED_DUST;
     public static final CreativeTabs CREATIVE_TAB;
@@ -256,7 +256,7 @@ public final class ModContent {
     }
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(Reference.MOD_ID, path);
+        return new ResourceLocation(Tags.MOD_ID, path);
     }
 
     @SubscribeEvent
@@ -320,7 +320,7 @@ public final class ModContent {
 
     private static <T extends Block> T setupBlock(T block, String name) {
         block.setRegistryName(id(name));
-        block.setTranslationKey(Reference.MOD_ID + "." + name);
+        block.setTranslationKey(Tags.MOD_ID + "." + name);
         block.setCreativeTab(CREATIVE_TAB);
         if (!(block instanceof BlockQuantumAlloyBlock) && !(block instanceof BlockQuantumAlloyStairs) && !(block instanceof BlockQuantumAlloyWall) && !(block instanceof BlockQuantumAlloySlab) && !(block instanceof BlockQuantumAlloyDoubleSlab)) {
             block.setHardness(2.2F);
@@ -337,7 +337,7 @@ public final class ModContent {
             item = new ItemBlock(block);
         }
         item.setRegistryName(id(name));
-        item.setTranslationKey(Reference.MOD_ID + "." + name);
+        item.setTranslationKey(Tags.MOD_ID + "." + name);
         return item;
     }
 

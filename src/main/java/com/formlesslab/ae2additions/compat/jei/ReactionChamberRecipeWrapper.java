@@ -1,6 +1,6 @@
 package com.formlesslab.ae2additions.compat.jei;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.recipe.ReactionChamberRecipe;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.ingredients.VanillaTypes;
@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ReactionChamberRecipeWrapper implements IRecipeWrapper {
-    private static final ResourceLocation BOLT_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/guis/emi.png");
+    private static final ResourceLocation BOLT_TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/guis/emi.png");
 
     private final ReactionChamberRecipe recipe;
     private final FluidStack inputFluid;

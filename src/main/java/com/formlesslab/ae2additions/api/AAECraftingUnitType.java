@@ -3,7 +3,7 @@ package com.formlesslab.ae2additions.api;
 import ae2.api.crafting.cpu.CraftingUnitVisualDefinition;
 import ae2.api.crafting.cpu.CraftingUnitVisualKind;
 import ae2.block.crafting.ICraftingUnitType;
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.init.Configurations;
 import com.formlesslab.ae2additions.init.ModContent;
 import net.minecraft.item.Item;
@@ -23,12 +23,12 @@ public enum AAECraftingUnitType implements ICraftingUnitType {
     AAECraftingUnitType(String registryName, int storageMb) {
         this.registryName = registryName;
         this.storageMb = storageMb;
-        this.id = new ResourceLocation(Reference.MOD_ID, registryName);
-        this.visualDefinition = CraftingUnitVisualDefinition.builder(CraftingUnitVisualKind.CUSTOM, new ResourceLocation(Reference.MOD_ID, "quantum_crafting/" + registryName), new ResourceLocation(Reference.MOD_ID, "quantum_crafting/" + registryName + "_formed")).ringTextures(new ResourceLocation(Reference.MOD_ID, "block/quantum_crafting/quantum_structure_formed_face"), new ResourceLocation(Reference.MOD_ID, "block/quantum_crafting/quantum_structure_formed_sides"), new ResourceLocation(Reference.MOD_ID, "block/quantum_crafting/quantum_structure_formed_sides")).formedModelProviderId(quantumComputerId()).build();
+        this.id = new ResourceLocation(Tags.MOD_ID, registryName);
+        this.visualDefinition = CraftingUnitVisualDefinition.builder(CraftingUnitVisualKind.CUSTOM, new ResourceLocation(Tags.MOD_ID, "quantum_crafting/" + registryName), new ResourceLocation(Tags.MOD_ID, "quantum_crafting/" + registryName + "_formed")).ringTextures(new ResourceLocation(Tags.MOD_ID, "block/quantum_crafting/quantum_structure_formed_face"), new ResourceLocation(Tags.MOD_ID, "block/quantum_crafting/quantum_structure_formed_sides"), new ResourceLocation(Tags.MOD_ID, "block/quantum_crafting/quantum_structure_formed_sides")).formedModelProviderId(quantumComputerId()).build();
     }
 
     private static ResourceLocation quantumComputerId() {
-        return new ResourceLocation(Reference.MOD_ID, "quantum_computer");
+        return new ResourceLocation(Tags.MOD_ID, "quantum_computer");
     }
 
     public String getRegistryName() {

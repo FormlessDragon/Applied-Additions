@@ -1,6 +1,6 @@
 package com.formlesslab.ae2additions.fluid;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.BlockFluidClassic;
@@ -28,7 +28,7 @@ public final class QuantumInfusionFluid {
 
         @Override
         public String getTranslationKey() {
-            return "tile." + Reference.MOD_ID + ".quantum_infusion_block";
+            return "tile." + Tags.MOD_ID + ".quantum_infusion_block";
         }
     }
 }

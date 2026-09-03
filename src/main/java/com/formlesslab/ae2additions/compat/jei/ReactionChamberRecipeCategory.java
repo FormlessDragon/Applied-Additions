@@ -1,6 +1,6 @@
 package com.formlesslab.ae2additions.compat.jei;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.init.ModContent;
 import com.formlesslab.ae2additions.tile.TileReactionChamber;
 import mezz.jei.api.IGuiHelper;
@@ -15,7 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import org.jspecify.annotations.NonNull;
 
 public class ReactionChamberRecipeCategory implements IRecipeCategory<ReactionChamberRecipeWrapper> {
-    private static final ResourceLocation TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/guis/reaction_chamber.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation(Tags.MOD_ID, "textures/guis/reaction_chamber.png");
     private final IDrawable background;
     private final IDrawable icon;
     private final IDrawableAnimated progress;
@@ -39,7 +39,7 @@ public class ReactionChamberRecipeCategory implements IRecipeCategory<ReactionCh
 
     @Override
     public String getModName() {
-        return Reference.MOD_NAME;
+        return Tags.MOD_NAME;
     }
 
     @Override

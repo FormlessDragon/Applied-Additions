@@ -2,7 +2,7 @@ package com.formlesslab.ae2additions.client.model;
 
 import ae2.api.client.crafting.ICraftingUnitModelProvider;
 import ae2.api.crafting.cpu.ICraftingUnitDefinition;
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.api.AAECraftingUnitType;
 import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -34,7 +34,7 @@ public class AAECraftingUnitModelProvider {
     }
 
     private static ResourceLocation texture(String name) {
-        return new ResourceLocation(Reference.MOD_ID, "block/quantum_crafting/" + name);
+        return new ResourceLocation(Tags.MOD_ID, "block/quantum_crafting/" + name);
     }
 
     private static AAECraftingUnitType resolveType(ICraftingUnitDefinition definition) {

@@ -1,15 +1,15 @@
 package com.formlesslab.ae2additions.init;
 
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Config(modid = Reference.MOD_ID, name = Reference.MOD_ID, category = "")
+@Config(modid = Tags.MOD_ID, name = Tags.MOD_ID, category = "")
 @Config.LangKey("config.ae2additions")
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID)
+@Mod.EventBusSubscriber(modid = Tags.MOD_ID)
 public final class Configurations {
 
     @Config.Name("wireless")
@@ -33,8 +33,8 @@ public final class Configurations {
 
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-        if (Reference.MOD_ID.equals(event.getModID())) {
-            ConfigManager.sync(Reference.MOD_ID, Config.Type.INSTANCE);
+        if (Tags.MOD_ID.equals(event.getModID())) {
+            ConfigManager.sync(Tags.MOD_ID, Config.Type.INSTANCE);
         }
     }
 

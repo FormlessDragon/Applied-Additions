@@ -6,7 +6,7 @@ import ae2.api.storage.cells.ICellWorkbenchItem;
 import ae2.api.storage.cells.IStackTooltipDataProvider;
 import ae2.items.AEBaseItem;
 import ae2.items.storage.StorageCellTooltipComponent;
-import com.formlesslab.ae2additions.Reference;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.cell.InfinityCellContents;
 import com.formlesslab.ae2additions.init.ModContent;
 import net.minecraft.client.util.ITooltipFlag;
@@ -37,14 +37,14 @@ public class ItemInfinityCell extends AEBaseItem implements ICellWorkbenchItem, 
 
         List<AEKey> keys = InfinityCellContents.readKeys(stack);
         if (keys.size() == 1) {
-            return new TextComponentTranslation("item." + Reference.MOD_ID + ".infinity_cell.name", keys.getFirst().getDisplayName()).getFormattedText();
+            return new TextComponentTranslation("item." + Tags.MOD_ID + ".infinity_cell.name", keys.getFirst().getDisplayName()).getFormattedText();
         }
-        return new TextComponentTranslation("item." + Reference.MOD_ID + ".infinity_cell.multiple.name").getFormattedText();
+        return new TextComponentTranslation("item." + Tags.MOD_ID + ".infinity_cell.multiple.name").getFormattedText();
     }
 
     @Override
     protected void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
-        tooltip.add(TextFormatting.GREEN + new TextComponentTranslation("tooltip." + Reference.MOD_ID + ".infinity_cell").getFormattedText());
+        tooltip.add(TextFormatting.GREEN + new TextComponentTranslation("tooltip." + Tags.MOD_ID + ".infinity_cell").getFormattedText());
     }
 
     @Override

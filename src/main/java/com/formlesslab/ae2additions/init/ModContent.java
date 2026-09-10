@@ -1,5 +1,6 @@
 package com.formlesslab.ae2additions.init;
 
+import ae2.api.client.StorageCellModels;
 import ae2.api.stacks.AEFluidKey;
 import ae2.api.stacks.AEItemKey;
 import ae2.api.stacks.AEKey;
@@ -135,7 +136,6 @@ public final class ModContent {
         registerItem(PRINTED_QUANTUM_PROCESSOR, "printed_quantum_processor");
         registerItem(QUANTUM_PROCESSOR, "quantum_processor");
         registerItem(QUANTUM_STORAGE_COMPONENT, "quantum_storage_component");
-        registerItem(INFINITY_CELL, "infinity_cell");
         registerItem(QUANTUM_INFUSED_DUST, "quantum_infused_dust");
         registerItem(SHATTERED_SINGULARITY, "shattered_singularity");
         registerItem(QUANTUM_ALLOY, "quantum_alloy");
@@ -177,6 +177,7 @@ public final class ModContent {
         registerTileEntity(TileAssemblerMatrixCrafter.class, "assembler_matrix_crafter");
         registerTileEntity(TileAssemblerMatrixSpeed.class, "assembler_matrix_speed");
 
+        registerItem(INFINITY_CELL, "infinity_cell");
         INFINITY_COBBLESTONE_CELL = registerBuiltinInfinityCell("infinity_cobblestone", Collections.singletonList(Objects.requireNonNull(AEItemKey.of(new ItemStack(Blocks.COBBLESTONE)), "Unable to create cobblestone key")));
         INFINITY_WATER_CELL = registerBuiltinInfinityCell("infinity_water", Collections.singletonList(Objects.requireNonNull(AEFluidKey.of(Objects.requireNonNull(FluidRegistry.WATER, "minecraft:water is unavailable")), "Unable to create water key")));
     }
@@ -280,7 +281,8 @@ public final class ModContent {
         });
         for (ModelEntry entry : MODELS) {
             ModelLoader.setCustomModelResourceLocation(entry.item, 0, new ModelResourceLocation(id(entry.modelName), "inventory"));
-        }
+        }//infinity_cell
+        StorageCellModels.registerModel(INFINITY_CELL, id("block/cells/infinity_cell"));
     }
 
     public static <T extends Block> T registerBlock(T block, String name) {

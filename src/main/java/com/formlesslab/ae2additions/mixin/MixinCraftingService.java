@@ -9,6 +9,7 @@ import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPU;
 import com.formlesslab.ae2additions.me.cluster.ClusterAdvCraftingCPU;
 import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.nbt.NBTTagCompound;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +29,7 @@ public abstract class MixinCraftingService {
 
     @Final
     @Shadow
-    private ObjectOpenHashSet<CraftingCPUCluster> craftingCPUClusters;
+    private ReferenceOpenHashSet<CraftingCPUCluster> craftingCPUClusters;
 
     @Final
     @Shadow

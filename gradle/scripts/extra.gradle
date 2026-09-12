@@ -27,9 +27,9 @@ runtimeTestProductionMods.transitive = false
             return
         }
         def productionNotation = [
-                group: dependency.group,
-                name: dependency.name,
-                version: dependency.version
+            group: dependency.group,
+            name: dependency.name,
+            version: dependency.version
         ]
         if (!dependency.artifacts.empty) {
             def requestedArtifact = dependency.artifacts.iterator().next()
@@ -41,48 +41,48 @@ runtimeTestProductionMods.transitive = false
             }
         }
         def productionDependency = project.dependencies.create(
-                productionNotation
+            productionNotation
         )
         productionDependency.transitive = false
         runtimeTestProductionMods.dependencies.add(productionDependency)
     }
 }
 def runtimeTestModsDir = providers.gradleProperty('runtimeTestModsDir')
-        .map { file(it) }
-        .orElse(layout.buildDirectory.dir('runtime-test/instance/mods'))
+    .map { file(it) }
+    .orElse(layout.buildDirectory.dir('runtime-test/instance/mods'))
 def runtimeTestMinecraftDir = providers.gradleProperty('runtimeTestMinecraftDir')
-        .map { file(it) }
-        .orElse(layout.buildDirectory.dir('runtime-test/minecraft'))
+    .map { file(it) }
+    .orElse(layout.buildDirectory.dir('runtime-test/minecraft'))
 def runtimeTestSupportDir = layout.buildDirectory.dir('runtime-test/support')
 def runtimeTestClientModsDir = layout.buildDirectory.dir('runtime-test/client-mods')
 def runtimeRemappedDir = layout.buildDirectory.dir('runtime-test/remapped-mods')
 def runtimeMcpRemapMarker = layout.buildDirectory.file(
-        'runtime-test/runtime-mcp-remap.marker'
+    'runtime-test/runtime-mcp-remap.marker'
 )
 
 def runtimeProductionFiles = []
 def runtimeFallbackArtifacts = []
 def namespaceAttribute = Attribute.of(
-        'com.gtnewhorizons.retrofuturagradle.obfuscation',
-        String
+    'com.gtnewhorizons.retrofuturagradle.obfuscation',
+    String
 )
 
 def resolveProductionArtifact = { artifact ->
     def moduleId = artifact.variant.owner
     if (!(moduleId instanceof ModuleComponentIdentifier)) {
         throw new GradleException(
-                "Runtime test artifact is not an external module: ${artifact.file}"
+            "Runtime test artifact is not an external module: ${artifact.file}"
         )
     }
 
     def productionDependency = project.dependencies.create([
-            group: moduleId.group,
-            name: moduleId.module,
-            version: moduleId.version
+        group: moduleId.group,
+        name: moduleId.module,
+        version: moduleId.version
     ])
     productionDependency.transitive = false
     def productionConfiguration = configurations.detachedConfiguration(
-            productionDependency
+        productionDependency
     )
     productionConfiguration.transitive = false
     productionConfiguration.attributes {
@@ -92,16 +92,16 @@ def resolveProductionArtifact = { artifact ->
         lenient true
     }.artifacts.findAll { candidate ->
         candidate.file.name.endsWith('.jar')
-                && !candidate.file.name.endsWith('-dev.jar')
-                && !candidate.file.name.endsWith('-sources.jar')
+            && !candidate.file.name.endsWith('-dev.jar')
+            && !candidate.file.name.endsWith('-sources.jar')
     }
     if (candidates.isEmpty()) {
         return null
     }
     if (candidates.size() > 1) {
         throw new GradleException(
-                "Multiple production artifacts resolved for ${moduleId}: " +
-                        candidates.collect { it.file.name }.join(', ')
+            "Multiple production artifacts resolved for ${moduleId}: " +
+                candidates.collect { it.file.name }.join(', ')
         )
     }
     candidates.iterator().next().file
@@ -109,7 +109,7 @@ def resolveProductionArtifact = { artifact ->
 
 runtimeTestProductionMods.incoming.artifactView {}.artifacts.each { artifact ->
     if (!artifact.file.name.endsWith('.jar')
-            || artifact.file.name.endsWith('-sources.jar')) {
+        || artifact.file.name.endsWith('-sources.jar')) {
         return
     }
 
@@ -131,7 +131,7 @@ runtimeTestProductionMods.incoming.artifactView {}.artifacts.each { artifact ->
 
 def runtimeFallbackTasks = []
 def runtimeFallbackInputDir = layout.buildDirectory.dir(
-        'runtime-test/inputs'
+    'runtime-test/inputs'
 )
 runtimeFallbackArtifacts.eachWithIndex { artifact, index ->
     def inputTask = tasks.register("runtimeTestInput${index}", Jar) {
@@ -140,8 +140,8 @@ runtimeFallbackArtifacts.eachWithIndex { artifact, index ->
         from { zipTree(artifact.file) }
     }
     def remapTask = minecraftConfig.remap(
-            inputTask.get(),
-            "runtimeTestRemap${index}"
+        inputTask.get(),
+        "runtimeTestRemap${index}"
     ) {
         devNamespace 'mcp'
         prodNamespace productionNamespace.name
@@ -152,19 +152,19 @@ runtimeFallbackArtifacts.eachWithIndex { artifact, index ->
     }
     remapTask.configure {
         archiveFileName = artifact.file.name.replaceFirst(
-                '-dev(?=\\.jar$)',
-                ''
+            '-dev(?=\\.jar$)',
+            ''
         )
         destinationDirectory = runtimeRemappedDir
         doFirst {
             logger.lifecycle(
-                    "[RuntimeTest] Remapping ${artifact.file.name} from mcp " +
-                            "to ${productionNamespace.name}"
+                "[RuntimeTest] Remapping ${artifact.file.name} from mcp " +
+                    "to ${productionNamespace.name}"
             )
         }
         doLast {
             logger.lifecycle(
-                    "[RuntimeTest] Finished remapping ${artifact.file.name}"
+                "[RuntimeTest] Finished remapping ${artifact.file.name}"
             )
         }
     }
@@ -184,15 +184,15 @@ def runtimeMcpRemapTask = tasks.register('runtimeTestRemapMcp') {
             remapTask.get().archiveFile.get().asFile
         }
         runtimeMcpRemapMarker.get().asFile.text = (
-                runtimeProductionFiles.collect { it.name } +
-                        remappedFiles.collect { it.name }
+            runtimeProductionFiles.collect { it.name } +
+                remappedFiles.collect { it.name }
         ).sort().join('\n') + '\n'
         if (remappedFiles.isEmpty()) {
             project.delete(runtimeRemappedDir)
         }
         logger.lifecycle(
-                "[RuntimeTest] Production variants: ${runtimeProductionFiles.size()}, " +
-                        "fallback remaps: ${remappedFiles.size()}"
+            "[RuntimeTest] Production variants: ${runtimeProductionFiles.size()}, " +
+                "fallback remaps: ${remappedFiles.size()}"
         )
     }
 }
@@ -229,21 +229,21 @@ tasks.register('installRuntimeTestClient', JavaExec) {
     mainClass = 'net.minecraftforge.installer.SimpleInstaller'
     def installDir = runtimeTestMinecraftDir.get().asFile
     def profile = new File(
-            installDir,
-            "versions/${minecraftVersion}-Cleanroom-${cleanroomVersion}/" +
-                    "${minecraftVersion}-Cleanroom-${cleanroomVersion}.json"
+        installDir,
+        "versions/${minecraftVersion}-Cleanroom-${cleanroomVersion}/" +
+        "${minecraftVersion}-Cleanroom-${cleanroomVersion}.json"
     )
     def cleanroomJar = new File(
-            installDir,
-            "libraries/com/cleanroommc/cleanroom/${cleanroomVersion}/" +
-                    "cleanroom-${cleanroomVersion}.jar"
+        installDir,
+        "libraries/com/cleanroommc/cleanroom/${cleanroomVersion}/" +
+        "cleanroom-${cleanroomVersion}.jar"
     )
     def marker = layout.buildDirectory.file('runtime-test/cleanroom-client-installed.marker').get().asFile
     onlyIf {
         !marker.exists()
-                || marker.text.trim() != "${minecraftVersion}-Cleanroom-${cleanroomVersion}"
-                || !profile.isFile()
-                || !cleanroomJar.isFile()
+            || marker.text.trim() != "${minecraftVersion}-Cleanroom-${cleanroomVersion}"
+            || !profile.isFile()
+            || !cleanroomJar.isFile()
     }
     doFirst {
         installDir.mkdirs()
@@ -272,5 +272,89 @@ spotless {
         leadingTabsToSpaces()
         endWithNewline()
         removeUnusedImports()
+    }
+}
+
+def curseforgeProjectId = findProperty('curseforge_project_id')
+if (curseforgeProjectId != null && !curseforgeProjectId.toString().isBlank()) {
+    curseforgeProjectId = curseforgeProjectId.toString().trim()
+    if (!curseforgeProjectId.matches('\\d+')) {
+        throw new GradleException(
+            "Property curseforge_project_id must be a numeric CurseForge project id: ${curseforgeProjectId}"
+        )
+    }
+    def curseforgeReleaseType = findProperty('curseforge_release_type')
+    if (curseforgeReleaseType == null || curseforgeReleaseType.toString().isBlank()) {
+        def detectedVersion = propertyString('mod_version').toLowerCase()
+        if (detectedVersion.contains('alpha')) {
+            curseforgeReleaseType = 'alpha'
+        } else if (detectedVersion.contains('beta') || detectedVersion.contains('pre') || detectedVersion.contains('rc')) {
+            curseforgeReleaseType = 'beta'
+        } else {
+            curseforgeReleaseType = 'release'
+        }
+    } else {
+        curseforgeReleaseType = curseforgeReleaseType.toString().toLowerCase().trim()
+    }
+    if (!['alpha', 'beta', 'release'].contains(curseforgeReleaseType)) {
+        throw new GradleException(
+            "Property curseforge_release_type must be one of alpha, beta, release: ${curseforgeReleaseType}"
+        )
+    }
+    setDefaultProperty('curseforge_game_versions', false, '1.12.2,Forge,Java 25,Client,Server')
+    def curseforgeGameVersions = []
+    propertyStringList('curseforge_game_versions', ',').each { curseforgeGameVersions.add(it.trim()) }
+    curseforgeGameVersions.removeAll { it.isBlank() }
+    if (curseforgeGameVersions.isEmpty()) {
+        throw new GradleException('Property curseforge_game_versions must define at least one CurseForge game version tag!')
+    }
+    def curseforgeRelationTypes = [
+        'curseforge_relations_required': 'requiredDependency',
+        'curseforge_relations_optional': 'optionalDependency',
+        'curseforge_relations_embedded': 'embeddedLibrary',
+        'curseforge_relations_incompatible': 'incompatible',
+        'curseforge_relations_tool': 'tool'
+    ]
+    def curseforgeRelations = [:]
+    curseforgeRelationTypes.each { propertyKey, relationType ->
+        setDefaultProperty(propertyKey, false, '')
+        def slugs = []
+        propertyStringList(propertyKey).each { slugs.add(it) }
+        if (!slugs.isEmpty()) {
+            curseforgeRelations.put(relationType, slugs)
+        }
+    }
+    def curseforgeChangelogFile = null
+    def curseforgeChangelogProperty = findProperty('curseforge_changelog_file')
+    if (curseforgeChangelogProperty != null && !curseforgeChangelogProperty.toString().isBlank()) {
+        curseforgeChangelogFile = file(curseforgeChangelogProperty.toString())
+    } else if (file('CHANGELOG.md').isFile()) {
+        curseforgeChangelogFile = file('CHANGELOG.md')
+    }
+    setDefaultProperty('curseforge_debug_mode', false, 'false')
+    def curseforgeDebugMode = propertyBool('curseforge_debug_mode')
+
+    tasks.register('publishCurseForge', net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+        dependsOn tasks.named('build')
+        group = 'publishing'
+        description = "Publishes the production mod jar to CurseForge project ${curseforgeProjectId}."
+        apiToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+        debugMode = curseforgeDebugMode
+        def mainFile = upload(curseforgeProjectId, productionJarTask.get())
+        mainFile.releaseType = curseforgeReleaseType
+        mainFile.changelogType = 'markdown'
+        if (curseforgeChangelogFile != null) {
+            mainFile.changelog = curseforgeChangelogFile
+        }
+        curseforgeGameVersions.each { mainFile.addGameVersion(it) }
+        curseforgeRelations.each { relationType, slugs ->
+            mainFile.addRelations(relationType, slugs as String[])
+        }
+    }
+
+    def curseforgeAddon = file('addon.gradle')
+    if (curseforgeAddon.isFile()) {
+        apply from: curseforgeAddon
+        logger.lifecycle("Applied CurseForge addon script: ${curseforgeAddon}")
     }
 }

@@ -4,6 +4,7 @@ import com.formlesslab.ae2additions.client.gui.GuiAssemblerMatrix;
 import com.formlesslab.ae2additions.network.base.ModClientboundPacket;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -15,22 +16,26 @@ import java.io.IOException;
 
 public class SAssemblerMatrixUpdate extends ModClientboundPacket {
     private long patternId;
-    private Int2ObjectMap<ItemStack> updateMap = new Int2ObjectOpenHashMap<>();
+    private Int2ObjectMap<ItemStack> updateMap;
 
     public SAssemblerMatrixUpdate() {
     }
 
     public SAssemblerMatrixUpdate(long patternId, Int2ObjectMap<ItemStack> updateMap) {
         this.patternId = patternId;
-        this.updateMap = new Int2ObjectOpenHashMap<>(updateMap);
+        this.updateMap = updateMap.isEmpty() ? Int2ObjectMaps.emptyMap() : new Int2ObjectOpenHashMap<>(updateMap);
     }
 
     @Override
     protected void read(ByteBuf buf) {
         PacketBuffer packet = new PacketBuffer(buf);
         this.patternId = packet.readLong();
-        this.updateMap = new Int2ObjectOpenHashMap<>();
         int size = packet.readVarInt();
+        if (size == 0) {
+            this.updateMap = Int2ObjectMaps.emptyMap();
+            return;
+        }
+        this.updateMap = new Int2ObjectOpenHashMap<>();
         for (int i = 0; i < size; i++) {
             int slot = packet.readVarInt();
             try {

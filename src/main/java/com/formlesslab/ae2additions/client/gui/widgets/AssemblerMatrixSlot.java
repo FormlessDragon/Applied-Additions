@@ -2,6 +2,7 @@ package com.formlesslab.ae2additions.client.gui.widgets;
 
 import ae2.api.inventories.InternalInventory;
 import ae2.container.slot.AppEngSlot;
+import ae2.container.slot.SlotBackgroundIcon;
 import ae2.crafting.pattern.EncodedPatternItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
@@ -16,6 +17,7 @@ public class AssemblerMatrixSlot extends AppEngSlot {
         this.patternId = patternId;
         this.offset = offset;
         this.setNotDraggable();
+        this.setBackgroundIcon(SlotBackgroundIcon.BLANK_PATTERN);
     }
 
     private static World getDisplayWorld() {

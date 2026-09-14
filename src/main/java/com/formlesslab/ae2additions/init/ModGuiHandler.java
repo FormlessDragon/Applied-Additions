@@ -2,9 +2,23 @@ package com.formlesslab.ae2additions.init;
 
 import ae2.client.gui.style.GuiStyleManager;
 import ae2.core.gui.locator.GuiHostLocators;
-import com.formlesslab.ae2additions.client.gui.*;
-import com.formlesslab.ae2additions.container.*;
-import com.formlesslab.ae2additions.tile.*;
+import com.formlesslab.ae2additions.client.gui.GuiAssemblerMatrix;
+import com.formlesslab.ae2additions.client.gui.GuiQuantumComputer;
+import com.formlesslab.ae2additions.client.gui.GuiReactionChamber;
+import com.formlesslab.ae2additions.client.gui.GuiWirelessConnector;
+import com.formlesslab.ae2additions.client.gui.GuiWirelessHub;
+import com.formlesslab.ae2additions.container.ContainerAssemblerMatrix;
+import com.formlesslab.ae2additions.container.ContainerQuantumComputer;
+import com.formlesslab.ae2additions.container.ContainerReactionChamber;
+import com.formlesslab.ae2additions.container.ContainerWirelessConnector;
+import com.formlesslab.ae2additions.container.ContainerWirelessHub;
+import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
+import com.formlesslab.ae2additions.tile.TileReactionChamber;
+import com.formlesslab.ae2additions.tile.TileWirelessConnector;
+import com.formlesslab.ae2additions.tile.TileWirelessHub;
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -13,9 +27,6 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public class ModGuiHandler implements IGuiHandler {
     public static final int WIRELESS_CONNECTOR = 0;
     public static final int WIRELESS_HUB = 1;
@@ -23,14 +34,14 @@ public class ModGuiHandler implements IGuiHandler {
     public static final int ASSEMBLER_MATRIX = 3;
     public static final int REACTION_CHAMBER = 4;
 
-    private static final Map<Integer, GuiRegistration<?>> REGISTRATIONS = new LinkedHashMap<>();
+    private static final Int2ObjectMap<GuiRegistration<?>> REGISTRATIONS = new Int2ObjectLinkedOpenHashMap<>();
     private static boolean clientRegistrationsInitialized;
 
     static {
         registerGui(WIRELESS_CONNECTOR, TileWirelessConnector.class, (player, _, _, connector) -> new ContainerWirelessConnector(player.inventory, connector));
         registerGui(WIRELESS_HUB, TileWirelessHub.class, (player, _, _, hub) -> new ContainerWirelessHub(player.inventory, hub));
         registerGui(QUANTUM_COMPUTER, TileAdvCraftingBlock.class, (player, _, _, quantum) -> new ContainerQuantumComputer(player.inventory, quantum));
-        registerGui(ASSEMBLER_MATRIX, TileAssemblerMatrixBase.class, (player, _, _, matrix) -> new ContainerAssemblerMatrix(player.inventory, matrix));
+        registerGui(ASSEMBLER_MATRIX, TileAssemblerMatrixBase.class, (player, _, _, matrix) -> createAssemblerMatrixContainer(player, matrix));
         registerGui(REACTION_CHAMBER, TileReactionChamber.class, (player, _, _, chamber) -> createReactionChamberContainer(player, chamber));
     }
 
@@ -65,6 +76,14 @@ public class ModGuiHandler implements IGuiHandler {
         registerClientGui(QUANTUM_COMPUTER, TileAdvCraftingBlock.class, (player, _, _, quantum) -> new GuiQuantumComputer(new ContainerQuantumComputer(player.inventory, quantum), player.inventory, quantum.getDisplayName(), GuiStyleManager.loadStyleDoc("/screens/quantum_computer.json")));
         registerClientGui(ASSEMBLER_MATRIX, TileAssemblerMatrixBase.class, (player, _, _, matrix) -> new GuiAssemblerMatrix<>(new ContainerAssemblerMatrix(player.inventory, matrix), player.inventory, GuiStyleManager.loadStyleDoc("/screens/assembler_matrix.json")));
         registerClientGui(REACTION_CHAMBER, TileReactionChamber.class, (player, _, _, chamber) -> new GuiReactionChamber(createReactionChamberContainer(player, chamber), player.inventory, GuiStyleManager.loadStyleDoc("/screens/reaction_chamber.json")));
+    }
+
+    private static ContainerAssemblerMatrix createAssemblerMatrixContainer(EntityPlayer player, TileAssemblerMatrixBase matrix) {
+        ContainerAssemblerMatrix container = new ContainerAssemblerMatrix(player.inventory, matrix);
+        // Sub-screens (e.g. the priority screen opened from the toolbar) are opened through SwitchGuisPacket, which
+        // needs the locator to rebuild the container on return. Without it the request is silently dropped.
+        container.setLocator(GuiHostLocators.forTile(matrix));
+        return container;
     }
 
     private static ContainerReactionChamber createReactionChamberContainer(EntityPlayer player, TileReactionChamber chamber) {

@@ -1,12 +1,13 @@
 package com.formlesslab.ae2additions.wireless;
 
-import java.util.HashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 import java.util.Random;
-import java.util.Set;
 
 public final class FrequencyGenerator {
     private final Random random = new Random();
-    private final Set<Long> used = new HashSet<>();
+    private final LongSet used = new LongOpenHashSet();
 
     public synchronized long next() {
         long value;

@@ -11,19 +11,26 @@ import ae2.client.gui.style.GuiStyle;
 import ae2.client.gui.style.PaletteColor;
 import ae2.client.gui.style.WidgetStyle;
 import ae2.client.gui.widgets.AETextField;
+import ae2.client.gui.widgets.ITextFieldGui;
 import ae2.client.gui.widgets.IconButton;
 import ae2.client.gui.widgets.Scrollbar;
 import ae2.container.AEBaseContainer;
+import ae2.container.GuiIds;
 import ae2.container.SlotSemantics;
 import ae2.core.localization.GuiText;
 import ae2.core.network.InitNetwork;
 import ae2.core.network.serverbound.InventoryActionPacket;
+import ae2.core.network.serverbound.SwitchGuisPacket;
 import ae2.crafting.pattern.EncodedPatternItem;
 import ae2.helpers.InventoryAction;
 import ae2.util.inv.AppEngInternalInventory;
 import com.formlesslab.ae2additions.api.AssemblerMatrixMenu;
 import com.formlesslab.ae2additions.client.gui.widgets.AssemblerMatrixSlot;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
@@ -31,22 +38,25 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentTranslation;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
-public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu> extends AEBaseGui<T> {
+public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu> extends AEBaseGui<T> implements ITextFieldGui {
     private static final int ROW_HEIGHT = 18;
     private static final int GUI_PADDING_X = 8;
     private static final int SLOT_SIZE = 18;
     private static final int VISIBLE_ROWS = 4;
 
     private final Scrollbar scrollbar;
-    private final Map<Long, PatternInfo> infos = new TreeMap<>();
-    private final ArrayList<PatternRow> rows = new ArrayList<>();
-    private final ArrayList<ItemStack> matchedStacks = new ArrayList<>();
-    private final ArrayList<AssemblerMatrixSlot> visibleSlots = new ArrayList<>();
+    private final Long2ObjectMap<PatternInfo> infos = new Long2ObjectAVLTreeMap<>();
+    private final ObjectArrayList<PatternRow> rows = new ObjectArrayList<>();
+    private final ObjectArrayList<ItemStack> matchedStacks = new ObjectArrayList<>();
+    private final ObjectArrayList<AssemblerMatrixSlot> visibleSlots = new ObjectArrayList<>();
     private final AETextField searchField;
     private final MatrixIconButton patternShowButton;
     private int queuedJobs;
@@ -64,6 +74,10 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
         cancel.setMessage(new TextComponentTranslation("gui.ae2additions.assembler_matrix.cancel"));
         this.addToLeftToolbar(cancel);
 
+        MatrixIconButton priority = new MatrixIconButton(() -> Icon.PRIORITY, this::openPriorityGui);
+        priority.setMessage(GuiText.Priority.text());
+        this.addToLeftToolbar(priority);
+
         this.patternShowButton = new MatrixIconButton(this::patternModeIcon, this::togglePatternMode);
         this.patternShowButton.setMessage(GuiText.PatternAccessTerminalHint.text());
         this.addToLeftToolbar(this.patternShowButton);
@@ -74,13 +88,17 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
             return Collections.emptyList();
         }
         String[] split = value.toLowerCase(Locale.ROOT).trim().split("\\s+");
-        ArrayList<String> tokens = new ArrayList<>(split.length);
+        ObjectArrayList<String> tokens = new ObjectArrayList<>(split.length);
         for (String token : split) {
             if (!token.isEmpty()) {
                 tokens.add(token);
             }
         }
         return tokens;
+    }
+
+    private void openPriorityGui() {
+        InitNetwork.sendToServer(SwitchGuisPacket.openSubGui(GuiIds.GuiKey.PRIORITY));
     }
 
     @Override
@@ -109,7 +127,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
-        int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
+        int textColor = Objects.requireNonNull(this.style).getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
         Point queuePos = this.resolveWidget("queueText");
         this.fontRenderer.drawString(I18n.format("gui.ae2additions.assembler_matrix.queued_jobs", this.queuedJobs), queuePos.x(), queuePos.y(), textColor);
         if (!this.searchField.getText().isEmpty()) {
@@ -127,7 +145,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
         if (size < VISIBLE_ROWS) {
             boolean first = true;
             while (size < VISIBLE_ROWS) {
-                Blitter emptyRow = this.style.getImage(first ? "emptyFirstRow" : "emptyRow");
+                Blitter emptyRow = Objects.requireNonNull(this.style).getImage(first ? "emptyFirstRow" : "emptyRow");
                 if (first) {
                     emptyRow.dest(offsetX + GUI_PADDING_X, offsetY + SLOT_SIZE * size + 31).blit();
                     first = false;
@@ -295,7 +313,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     }
 
     private boolean isMouseOverQueueText(int x, int y) {
-        WidgetStyle widget = this.style.getWidget("queueText");
+        WidgetStyle widget = Objects.requireNonNull(this.style).getWidget("queueText");
         Point pos = this.resolveWidget("queueText");
         int width = widget.getWidth() > 0 ? widget.getWidth() : 110;
         int height = widget.getHeight() > 0 ? widget.getHeight() : 12;
@@ -303,18 +321,23 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     }
 
     private Point resolveWidget(String id) {
-        return this.style.getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
+        return Objects.requireNonNull(this.style).getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
     }
 
     private InventoryAction getAction(int mouseButton, ClickType clickType) {
         return switch (clickType) {
             case PICKUP ->
-                    mouseButton == 1 ? InventoryAction.SPLIT_OR_PLACE_SINGLE : InventoryAction.PICKUP_OR_SET_DOWN;
+                mouseButton == 1 ? InventoryAction.SPLIT_OR_PLACE_SINGLE : InventoryAction.PICKUP_OR_SET_DOWN;
             case QUICK_MOVE -> mouseButton == 1 ? InventoryAction.PICKUP_SINGLE : InventoryAction.SHIFT_CLICK;
             case CLONE ->
-                    this.mc.player != null && this.mc.player.capabilities.isCreativeMode ? InventoryAction.CREATIVE_DUPLICATE : null;
+                this.mc.player != null && this.mc.player.capabilities.isCreativeMode ? InventoryAction.CREATIVE_DUPLICATE : null;
             default -> null;
         };
+    }
+
+    @Override
+    public Collection<? extends GuiTextField> getTextFields() {
+        return Collections.singletonList(this.searchField);
     }
 
     private interface IconSupplier {
@@ -322,7 +345,7 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
     }
 
     private static class PatternInfo {
-        private final List<PatternRow> internalRows = new ArrayList<>();
+        private final List<PatternRow> internalRows = new ObjectArrayList<>();
 
         PatternInfo(long id) {
             int left = AssemblerMatrixMenu.PATTERN_SLOTS;

@@ -38,9 +38,11 @@ public class TileWirelessHub extends AENetworkedTile implements ServerTickingTil
     private final boolean[] updateStatus = new boolean[MAX_PORTS];
     private final long[] frequencies = new long[MAX_PORTS];
     private final WirelessConnection[] connections = new WirelessConnection[MAX_PORTS];
+    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_HUB), 4, this::onUpgradesChanged);
     private double powerUse = 1.0;
     private AEColor color = AEColor.TRANSPARENT;
     private boolean clientConnected;
+
     public TileWirelessHub() {
         this.getMainNode().setFlags(GridFlags.DENSE_CAPACITY);
         this.getMainNode().setIdlePowerUsage(this.powerUse);
@@ -49,7 +51,7 @@ public class TileWirelessHub extends AENetworkedTile implements ServerTickingTil
         for (int i = 0; i < MAX_PORTS; i++) {
             this.connections[i] = new WirelessConnection(new PortNode(this, i));
         }
-    }    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_HUB), 4, this::onUpgradesChanged);
+    }
 
     private boolean isValidPort(int port) {
         return port >= 0 && port < MAX_PORTS;
@@ -348,7 +350,6 @@ public class TileWirelessHub extends AENetworkedTile implements ServerTickingTil
     }
 
 
-
     private record PortNode(TileWirelessHub hub, int port) implements WirelessNode {
 
         @Override
@@ -376,8 +377,6 @@ public class TileWirelessHub extends AENetworkedTile implements ServerTickingTil
             return this.hub;
         }
     }
-
-
 
 
 }

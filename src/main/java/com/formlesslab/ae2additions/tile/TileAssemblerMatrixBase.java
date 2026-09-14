@@ -13,16 +13,22 @@ import ae2.api.orientation.BlockOrientation;
 import ae2.api.util.AECableType;
 import ae2.api.util.IConfigManager;
 import ae2.api.util.IConfigurableObject;
+import ae2.container.ISubGui;
+import ae2.helpers.IPriorityHost;
 import ae2.me.cluster.IAEMultiBlock;
 import ae2.tile.grid.AENetworkedTile;
 import ae2.util.ConfigManager;
 import ae2.util.inv.CombinedInternalInventory;
+import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixBase;
+import com.formlesslab.ae2additions.init.ModGuiHandler;
 import com.formlesslab.ae2additions.me.calculator.CalculatorAssemblerMatrix;
 import com.formlesslab.ae2additions.me.cluster.ClusterAssemblerMatrix;
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -32,9 +38,13 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements IAEMultiBlock<ClusterAssemblerMatrix>, IPowerChannelState, IConfigurableObject {
+public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements IAEMultiBlock<ClusterAssemblerMatrix>, IPowerChannelState, IConfigurableObject, IPriorityHost {
 
     protected final CalculatorAssemblerMatrix calc = new CalculatorAssemblerMatrix(this);
     protected final ConfigManager manager;
@@ -44,6 +54,7 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
     private boolean applyingClusterConfig;
     private boolean clientFormed;
     private boolean clientPowered;
+    private int clusterPriority;
 
     public TileAssemblerMatrixBase() {
         this.getMainNode().setFlags(GridFlags.MULTIBLOCK, GridFlags.REQUIRE_CHANNEL).addService(IGridMultiblock.class, this::getMultiblockNodes).setIdlePowerUsage(0.5);
@@ -70,6 +81,14 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
 
     public void setCore(boolean core) {
         this.isCore = core;
+    }
+
+    public int getClusterPriority() {
+        return this.clusterPriority;
+    }
+
+    public void setClusterPriority(int clusterPriority) {
+        this.clusterPriority = clusterPriority;
     }
 
     @Override
@@ -124,6 +143,9 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
     public void saveAdditional(NBTTagCompound data) {
         super.saveAdditional(data);
         data.setBoolean("core", this.isCore);
+        if (this.isCore) {
+            data.setInteger("clusterPriority", this.clusterPriority);
+        }
         this.manager.writeToNBT(data);
     }
 
@@ -131,9 +153,43 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
     public void loadTag(NBTTagCompound data) {
         super.loadTag(data);
         this.setCore(data.getBoolean("core"));
+        if (this.isCore) {
+            this.clusterPriority = data.getInteger("clusterPriority");
+        }
         this.manager.readFromNBT(data);
         if (this.isCore) {
             this.setPreviousState(data.copy());
+        }
+    }
+
+    /**
+     * The crafting priority is a cluster-level value; only the core block persists it and the running cluster reads
+     * it during formation ({@link ClusterAssemblerMatrix#done}).
+     */
+    @Override
+    public int getPriority() {
+        return this.cluster != null ? this.cluster.getPatternPriority() : this.clusterPriority;
+    }
+
+    @Override
+    public void setPriority(int newValue) {
+        if (this.cluster != null) {
+            this.cluster.setPatternPriority(newValue);
+        } else {
+            this.clusterPriority = newValue;
+            this.saveChanges();
+        }
+    }
+
+    @Override
+    public ItemStack getMainContainerIcon() {
+        return this.getItemFromTile();
+    }
+
+    @Override
+    public void returnToMainContainer(EntityPlayer player, ISubGui subGui) {
+        if (this.world != null && !this.world.isRemote) {
+            player.openGui(AppliedAdditions.INSTANCE, ModGuiHandler.ASSEMBLER_MATRIX, this.world, this.pos.getX(), this.pos.getY(), this.pos.getZ());
         }
     }
 
@@ -175,7 +231,7 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
         if (this.cluster == null) {
             return null;
         }
-        List<InternalInventory> inv = new ArrayList<>();
+        List<InternalInventory> inv = new ObjectArrayList<>();
         for (TileAssemblerMatrixPattern pc : this.cluster.getPatterns()) {
             inv.add(pc.getExposedInventory());
         }
@@ -343,7 +399,7 @@ public abstract class TileAssemblerMatrixBase extends AENetworkedTile implements
         if (this.getCluster() == null) {
             return Collections.emptyIterator();
         }
-        List<IGridNode> nodes = new ArrayList<>();
+        List<IGridNode> nodes = new ObjectArrayList<>();
         Iterator<TileAssemblerMatrixBase> it = this.getCluster().getBlockEntities();
         while (it.hasNext()) {
             IGridNode node = it.next().getGridNode();

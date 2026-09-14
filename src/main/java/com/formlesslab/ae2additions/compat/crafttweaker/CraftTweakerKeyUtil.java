@@ -6,11 +6,11 @@ import ae2.api.stacks.AEKey;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.liquid.ILiquidStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidStack;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -67,7 +67,7 @@ final class CraftTweakerKeyUtil {
     }
 
     static List<Supplier<? extends AEKey>> suppliers(Object values) {
-        List<Supplier<? extends AEKey>> result = new ArrayList<>();
+        List<Supplier<? extends AEKey>> result = new ObjectArrayList<>();
         switch (values) {
             case null -> {
                 return result;

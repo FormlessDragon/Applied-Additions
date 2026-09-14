@@ -8,6 +8,7 @@ import ae2.api.networking.IGridMultiblock;
 import ae2.api.networking.IGridNode;
 import ae2.api.networking.IGridNodeListener;
 import ae2.api.networking.crafting.ICraftingCPU;
+import ae2.api.networking.crafting.ICraftingCpuProvider;
 import ae2.api.orientation.BlockOrientation;
 import ae2.api.util.AECableType;
 import ae2.api.util.IConfigManager;
@@ -15,6 +16,7 @@ import ae2.api.util.IConfigurableObject;
 import ae2.block.crafting.ICraftingUnitType;
 import ae2.crafting.inv.ListCraftingInventory;
 import ae2.me.cluster.IAEMultiBlock;
+import ae2.me.cluster.implementations.CraftingCPUCluster;
 import ae2.tile.crafting.ICraftingCPUTileEntity;
 import ae2.tile.grid.AENetworkedTile;
 import ae2.util.NullConfigManager;
@@ -27,9 +29,9 @@ import com.formlesslab.ae2additions.block.quantum.BlockAAECraftingUnit;
 import com.formlesslab.ae2additions.init.ModContent;
 import com.formlesslab.ae2additions.init.ModGuiHandler;
 import com.formlesslab.ae2additions.me.calculator.CalculatorAdvCraftingCPU;
+import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPU;
 import com.formlesslab.ae2additions.me.cluster.ClusterAdvCraftingCPU;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
@@ -41,8 +43,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlock<ClusterAdvCraftingCPU>, IPowerChannelState, IConfigurableObject, QuantumComputerHost {
+public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlock<ClusterAdvCraftingCPU>, ICraftingCpuProvider, IPowerChannelState, IConfigurableObject, QuantumComputerHost {
 
     private final CalculatorAdvCraftingCPU calc = new CalculatorAdvCraftingCPU(this);
     private NBTTagCompound previousState;
@@ -231,6 +234,8 @@ public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlo
             return;
         }
 
+        // Cancel first so running jobs release their links before the CPUs disappear.
+        this.cluster.cancelJobs();
         List<ListCraftingInventory> inventories = this.cluster.getInventories();
         List<BlockPos> places = new ObjectArrayList<>();
         Iterator<TileAdvCraftingBlock> blockEntities = this.cluster.getQuantumBlockEntities();
@@ -273,8 +278,13 @@ public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlo
         boolean formed = this.isFormed();
         boolean powered = this.getMainNode().isOnline();
         IBlockState current = this.world.getBlockState(this.pos);
+        // The unit count is server-only truth; the client keeps the value the server synced in the block state.
+        boolean multiblocked = this.world.isRemote
+            ? current.getValue(BlockAAEAbstractCraftingUnit.MULTIBLOCKED)
+            : this.cluster != null && this.cluster.numBlockEntities() > 1;
         IBlockState changed = setBooleanProperty(current, "powered", powered);
         changed = setBooleanProperty(changed, "formed", formed);
+        changed = setBooleanProperty(changed, "multiblocked", multiblocked);
 
         if (current != changed) {
             this.world.setBlockState(this.pos, changed, 2);
@@ -344,10 +354,23 @@ public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlo
 
     @Override
     public List<? extends ICraftingCPU> getQuantumCpus() {
-        if (this.cluster == null) {
+        return this.collectCpus();
+    }
+
+    /**
+     * Hands the whole cluster to AE2's crafting service. Every block of the multiblock is its own grid node and
+     * reports the same CPUs; the crafting service de-duplicates them by identity.
+     */
+    @Override
+    public Collection<? extends CraftingCPUCluster> getProvidedCraftingCpus() {
+        return this.collectCpus();
+    }
+
+    private List<AdvCraftingCPU> collectCpus() {
+        if (this.cluster == null || this.cluster.isDestroyed()) {
             return Collections.emptyList();
         }
-        List<ICraftingCPU> cpus = new ArrayList<>(this.cluster.getActiveCPUs());
+        List<AdvCraftingCPU> cpus = new ObjectArrayList<>(this.cluster.getActiveCPUs());
         cpus.add(this.cluster.getRemainingCapacityCPU());
         return cpus;
     }
@@ -430,6 +453,11 @@ public class TileAdvCraftingBlock extends AENetworkedTile implements IAEMultiBlo
         return new ICraftingCPUTileEntity.ClientState(this.isFormed(), this.isPowered(), this.getConnections());
     }
 
+    /**
+     * Connections of the formed model, matching AdvancedAE: units only connect to units of the same kind (structure
+     * frame to structure frame, internal unit to internal unit). Faces between different kinds stay drawn, so the
+     * units inside remain visible through the glass shell.
+     */
     private EnumSet<EnumFacing> getConnections() {
         EnumSet<EnumFacing> connections = EnumSet.noneOf(EnumFacing.class);
         if (this.world == null) {

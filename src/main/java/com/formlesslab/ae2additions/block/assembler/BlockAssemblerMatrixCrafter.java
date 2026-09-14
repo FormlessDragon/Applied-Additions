@@ -12,8 +12,7 @@ public class BlockAssemblerMatrixCrafter extends BlockAssemblerMatrixBase<TileAs
     @Override
     protected Object[] getTooltipArguments(int line) {
         return switch (line) {
-            case 2 ->
-                    new Object[]{Configurations.ASSEMBLER_MATRIX.crafterQueueSize, Configurations.ASSEMBLER_MATRIX.crafterParallelism};
+            case 2 -> new Object[]{Configurations.ASSEMBLER_MATRIX.crafterParallelism};
             case 3 -> new Object[]{TooltipHelper.formatNumber(Configurations.ASSEMBLER_MATRIX.crafterIdlePowerUsage)};
             default -> super.getTooltipArguments(line);
         };

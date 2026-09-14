@@ -4,6 +4,8 @@ import ae2.api.stacks.AEKey;
 import ae2.api.stacks.GenericStack;
 import ae2.core.AEConfig;
 import ae2.items.storage.StorageCellTooltipComponent;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,7 +13,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Serialization and display helpers for the single infinity-cell item.
@@ -66,14 +72,14 @@ public final class InfinityCellContents {
         }
 
         NBTTagList serializedKeys = tag.getTagList(KEYS_TAG, Constants.NBT.TAG_COMPOUND);
-        LinkedHashSet<AEKey> result = new LinkedHashSet<>();
+        Set<AEKey> result = new ObjectLinkedOpenHashSet<>();
         for (int index = 0; index < serializedKeys.tagCount(); index++) {
             AEKey key = AEKey.fromTagGeneric(serializedKeys.getCompoundTagAt(index));
             if (key != null) {
                 result.add(key);
             }
         }
-        return new ArrayList<>(result);
+        return new ObjectArrayList<>(result);
     }
 
     @Nullable
@@ -98,16 +104,16 @@ public final class InfinityCellContents {
         if (keys == null || keys.isEmpty()) {
             return Collections.emptyList();
         }
-        LinkedHashSet<AEKey> result = new LinkedHashSet<>();
+        Set<AEKey> result = new ObjectLinkedOpenHashSet<>();
         for (AEKey key : keys) {
             result.add(Objects.requireNonNull(key, "key"));
         }
-        return new ArrayList<>(result);
+        return new ObjectArrayList<>(result);
     }
 
     public static StorageCellTooltipComponent createTooltip(List<AEKey> keys) {
         int maxShown = Math.max(0, AEConfig.instance().getTooltipMaxCellContentShown());
-        List<GenericStack> content = new ArrayList<>(Math.min(keys.size(), maxShown));
+        List<GenericStack> content = new ObjectArrayList<>(Math.min(keys.size(), maxShown));
         for (int index = 0; index < keys.size() && index < maxShown; index++) {
             AEKey key = keys.get(index);
             content.add(new GenericStack(key, getMaxAmount(key)));

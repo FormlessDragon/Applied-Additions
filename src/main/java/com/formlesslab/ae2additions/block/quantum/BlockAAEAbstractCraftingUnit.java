@@ -28,10 +28,16 @@ import net.minecraftforge.common.property.IUnlistedProperty;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBlock> extends AEBaseTileBlock<T> {
     public static final PropertyBool FORMED = PropertyBool.create("formed");
     public static final PropertyBool POWERED = PropertyBool.create("powered");
+    /**
+     * True once the unit is part of a multiblock with more than one unit. A formed standalone quantum core keeps this
+     * false so it renders with its single-block model instead of the multiblock shell, like AdvancedAE does.
+     */
+    public static final PropertyBool MULTIBLOCKED = PropertyBool.create("multiblocked");
     public static final IUnlistedProperty<CraftingCubeState> STATE = new IUnlistedProperty<>() {
         @Override
         public String getName() {
@@ -62,7 +68,7 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
         this.setHardness(2.2F);
         this.setResistance(11.0F);
         this.setTileEntity(tileEntityClass);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(FORMED, Boolean.FALSE).withProperty(POWERED, Boolean.FALSE));
+        this.setDefaultState(this.blockState.getBaseState().withProperty(FORMED, Boolean.FALSE).withProperty(POWERED, Boolean.FALSE).withProperty(MULTIBLOCKED, Boolean.FALSE));
     }
 
     @Override
@@ -70,6 +76,7 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
         ObjectList<IProperty<?>> properties = new ObjectArrayList<>(this.getOrientationStrategy().getProperties());
         properties.add(POWERED);
         properties.add(FORMED);
+        properties.add(MULTIBLOCKED);
         return new ExtendedBlockState(this, properties.toArray(new IProperty<?>[0]), this.getUnlistedProperties());
     }
 
@@ -88,6 +95,8 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
         }
 
         var renderState = tile.getRenderState();
+        // MULTIBLOCKED is intentionally not derived here: the unit count is server-side truth and arrives through the
+        // synced block state (see TileAdvCraftingBlock#updateSubType).
         return state.withProperty(FORMED, renderState.formed()).withProperty(POWERED, renderState.powered());
     }
 
@@ -125,12 +134,16 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
         if (state.getValue(FORMED)) {
             meta |= 2;
         }
+        if (state.getValue(MULTIBLOCKED)) {
+            meta |= 4;
+        }
         return meta;
     }
 
     @Override
     public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(POWERED, (meta & 1) == 1).withProperty(FORMED, (meta & 2) == 2);
+        // MULTIBLOCKED has to ride in the metadata: block state sync to the client only carries these four bits.
+        return this.getDefaultState().withProperty(POWERED, (meta & 1) == 1).withProperty(FORMED, (meta & 2) == 2).withProperty(MULTIBLOCKED, (meta & 4) == 4);
     }
 
     @Override
@@ -168,7 +181,7 @@ public abstract class BlockAAEAbstractCraftingUnit<T extends TileAdvCraftingBloc
 
     @Override
     public void addCheckedInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
-        TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + this.getRegistryName().getPath(), this::getTooltipArguments);
+        TooltipHelper.addTranslatedLines(tooltip, "tooltip.ae2additions." + Objects.requireNonNull(this.getRegistryName()).getPath(), this::getTooltipArguments);
     }
 
     private Object[] getTooltipArguments(int line) {

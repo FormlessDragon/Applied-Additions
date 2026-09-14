@@ -16,6 +16,8 @@ import ae2.util.inv.AppEngInternalInventory;
 import ae2.util.inv.InternalInventoryHost;
 import ae2.util.inv.filter.IAEItemFilter;
 import com.formlesslab.ae2additions.me.cluster.ClusterAssemblerMatrix;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,9 +27,8 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -36,8 +37,8 @@ public class TileAssemblerMatrixPattern extends TileAssemblerMatrixFunction impl
     public static final int INV_SIZE = 36;
 
     private final AppEngInternalInventory patternInventory;
-    private final List<IAssemblerPattern> patterns = new ArrayList<>();
-    private final Set<AEItemKey> patternKeys = new HashSet<>();
+    private final List<IAssemblerPattern> patterns = new ObjectArrayList<>();
+    private final Set<AEItemKey> patternKeys = new ObjectOpenHashSet<>();
 
     public TileAssemblerMatrixPattern() {
         this.patternInventory = new AppEngInternalInventory(this, INV_SIZE, 1);
@@ -141,9 +142,21 @@ public class TileAssemblerMatrixPattern extends TileAssemblerMatrixFunction impl
         this.updatePatterns();
     }
 
+    /**
+     * Patterns are only visible to the crafting service while the matrix is formed and powered. Otherwise they drop
+     * out of the network's pattern index instead of failing later inside {@link #pushPattern}.
+     */
     @Override
     public List<IAssemblerPattern> getAvailablePatterns() {
+        if (!isFormed() || !this.getMainNode().isOnline()) {
+            return List.of();
+        }
         return this.patterns;
+    }
+
+    @Override
+    public int getPatternPriority() {
+        return this.cluster == null ? 0 : this.cluster.getPatternPriority();
     }
 
     @Override
@@ -154,19 +167,27 @@ public class TileAssemblerMatrixPattern extends TileAssemblerMatrixFunction impl
         return this.cluster.pushCraftingJob(patternDetails, inputHolder, craftCount);
     }
 
+    /**
+     * Merge push is decided purely by pattern ownership so AE2S keeps using the merged path for this provider. When
+     * the matrix is currently unable to work, {@link #getMaxPatternPushMultiplier} reports 0 and AE2S skips this
+     * provider for the pass instead of extracting inputs and failing in {@link #pushPattern}.
+     */
     @Override
     public boolean canMergePatternPush(IPatternDetails patternDetails) {
-        return patternDetails instanceof IAssemblerPattern && this.patterns.contains(patternDetails) && this.cluster != null;
+        return patternDetails instanceof IAssemblerPattern && this.patterns.contains(patternDetails);
     }
 
     @Override
     public int getMaxPatternPushMultiplier(IPatternDetails patternDetails, int maxMultiplier) {
-        if (maxMultiplier <= 0 || !this.canMergePatternPush(patternDetails)) {
+        if (maxMultiplier <= 0 || !isFormed() || !this.getMainNode().isActive() || this.cluster == null || !this.canMergePatternPush(patternDetails)) {
             return 0;
         }
         return this.cluster.getMaxPatternPushMultiplier(maxMultiplier);
     }
 
+    /**
+     * Only the shared parallel capacity limits this provider; when it is exhausted AE2S must not send patterns.
+     */
     @Override
     public boolean isBusy() {
         return this.cluster == null || this.cluster.isBusy();
@@ -204,7 +225,7 @@ public class TileAssemblerMatrixPattern extends TileAssemblerMatrixFunction impl
             iconStack = new ItemStack(Items.PAPER);
         }
         AEItemKey icon = AEItemKey.of(iconStack);
-        ITextComponent name = this.hasCustomName() ? new TextComponentString(this.getCustomName()) : icon.getDisplayName();
+        ITextComponent name = this.hasCustomName() ? new TextComponentString(this.getCustomName()) : Objects.requireNonNull(icon).getDisplayName();
         return new PatternContainerGroup(icon, name, List.of(new TextComponentTranslation("gui.ae2additions.assembler_matrix.pattern")));
     }
 

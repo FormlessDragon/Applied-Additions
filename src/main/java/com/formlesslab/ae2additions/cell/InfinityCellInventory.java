@@ -12,12 +12,12 @@ import ae2.api.storage.cells.ICellHandler;
 import ae2.api.storage.cells.ISaveProvider;
 import ae2.api.storage.cells.StorageCell;
 import com.formlesslab.ae2additions.item.ItemInfinityCell;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -31,7 +31,7 @@ public final class InfinityCellInventory implements StorageCell {
 
     private InfinityCellInventory(ItemStack stack) {
         this.stack = stack.copy();
-        this.keys = new LinkedHashSet<>(InfinityCellContents.readKeys(stack));
+        this.keys = new ObjectLinkedOpenHashSet<>(InfinityCellContents.readKeys(stack));
     }
 
     public static void registerHandler() {

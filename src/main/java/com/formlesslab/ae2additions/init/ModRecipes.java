@@ -2,15 +2,15 @@ package com.formlesslab.ae2additions.init;
 
 import ae2.util.inv.AppEngInternalInventory;
 import com.formlesslab.ae2additions.recipe.ReactionChamberRecipe;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.FluidTank;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public final class ModRecipes {
 
-    public static Set<ReactionChamberRecipe> REACTION_CHAMBER_RECIPES = new HashSet<>();
+    public static Set<ReactionChamberRecipe> REACTION_CHAMBER_RECIPES = new ObjectOpenHashSet<>();
 
     private ModRecipes() {
     }

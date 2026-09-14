@@ -7,10 +7,10 @@ import crafttweaker.api.liquid.ILiquidStack;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * A chainable list of arbitrary AE keys for an infinity cell.
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 @ZenRegister
 @ZenClass("mods.ae2additions.KeyList")
 public final class KeyList {
-    private final List<Supplier<? extends AEKey>> suppliers = new ArrayList<>();
+    private final List<Supplier<? extends AEKey>> suppliers = new ObjectArrayList<>();
 
     @ZenMethod
     public static KeyList create() {

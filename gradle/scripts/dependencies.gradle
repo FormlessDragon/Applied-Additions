@@ -33,14 +33,15 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.cleanroommc:sponge-mixin:0.20.13+mixin.0.8.7"
+    // Cleanroom ships this; the recipe factories need JsonObject.deepCopy(), which Minecraft's own Gson 2.2.4 hides.
+    compileOnly "com.google.code.gson:gson:2.12.1"
     // Included by the Minecraft 1.12 runtime; used for in-process Windows shell notifications.
     compileOnly "net.java.dev.jna:jna:4.4.0"
     if (enable_lwjglx.toBoolean()) {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"
     }
 
-    modImplementation "com.github.FormlessDragon:Applied-Energistics-2-Supergiant:v1.0.13"
+    modImplementation "com.github.FormlessDragon:Applied-Energistics-2-Supergiant:v1.0.14"
     modImplementation "curse.maven:had-enough-items-557549:7938914"
     modCompileOnly 'curse.maven:mouse-tweaks-unofficial-461660:5876158'
     compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.711'

@@ -23,8 +23,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
-import java.util.ArrayList;
 import java.util.List;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction implements IGridTickable {
 
@@ -45,18 +45,14 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
     };
 
     private final InventoryCrafting craftingInv = new InventoryCrafting(NULL_CONTAINER, 3, 3);
-    private final List<QueuedCraft> craftQueue = new ArrayList<>();
-    private final List<GenericStack> outputBuffer = new ArrayList<>();
+    private final List<QueuedCraft> craftQueue = new ObjectArrayList<>();
+    private final List<GenericStack> outputBuffer = new ObjectArrayList<>();
     private double savedQueueProgress;
     private int outputCooldown;
 
     public TileAssemblerMatrixCrafter() {
         super(Configurations.ASSEMBLER_MATRIX.crafterIdlePowerUsage);
         this.getMainNode().addService(IGridTickable.class, this);
-    }
-
-    public static int getMaxQueueSize() {
-        return Configurations.ASSEMBLER_MATRIX.crafterQueueSize;
     }
 
     public static int getMaxParallel() {
@@ -91,7 +87,7 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
     }
 
     private static List<GenericStack> toGenericStacks(KeyCounter counter) {
-        List<GenericStack> result = new ArrayList<>();
+        List<GenericStack> result = new ObjectArrayList<>();
         for (var entry : counter) {
             if (entry.getLongValue() > 0) {
                 result.add(new GenericStack(entry.getKey(), entry.getLongValue()));
@@ -102,9 +98,9 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
 
     private static List<GenericStack> readStacks(NBTTagCompound data, String key) {
         if (!data.hasKey(key, Constants.NBT.TAG_LIST)) {
-            return new ArrayList<>();
+            return new ObjectArrayList<>();
         }
-        List<GenericStack> result = new ArrayList<>();
+        List<GenericStack> result = new ObjectArrayList<>();
         for (GenericStack stack : GenericStack.readList(data.getTagList(key, Constants.NBT.TAG_COMPOUND))) {
             if (stack != null && stack.amount() > 0) {
                 result.add(stack);
@@ -141,10 +137,6 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
         return used >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) used;
     }
 
-    public boolean hasQueueSpace() {
-        return this.craftQueue.size() < getMaxQueueSize();
-    }
-
     public boolean hasQueuedJobs() {
         return !this.craftQueue.isEmpty();
     }
@@ -154,7 +146,7 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
     }
 
     public boolean pushJob(IPatternDetails patternDetails, KeyCounter[] inputHolder, int craftCount) {
-        if (!this.hasQueueSpace() || craftCount <= 0 || !(patternDetails instanceof IAssemblerPattern pattern)) {
+        if (craftCount <= 0 || !(patternDetails instanceof IAssemblerPattern pattern)) {
             return false;
         }
 
@@ -312,7 +304,7 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
                 return null;
             }
 
-            List<GenericStack> outputs = new ArrayList<>();
+            List<GenericStack> outputs = new ObjectArrayList<>();
             outputs.add(new GenericStack(mainOutput.what(), saturatedMultiply(mainOutput.amount(), craftCount)));
             this.collectRemainders(pattern, inputHolder, outputs);
             return new QueuedCraft(craftCount, flattenInputs(inputHolder), mergeStacks(outputs));
@@ -358,7 +350,7 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
             return TickRateModulation.SAME;
         }
 
-        List<GenericStack> remaining = new ArrayList<>();
+        List<GenericStack> remaining = new ObjectArrayList<>();
         boolean insertedAny = false;
         for (GenericStack stack : this.outputBuffer) {
             long inserted = grid.getStorageService().getInventory().insert(stack.what(), stack.amount(), Actionable.MODULATE, this.cluster.getSrc());
@@ -396,7 +388,7 @@ public class TileAssemblerMatrixCrafter extends TileAssemblerMatrixFunction impl
         if (stacks.isEmpty()) {
             return;
         }
-        List<GenericStack> merged = new ArrayList<>(this.outputBuffer.size() + stacks.size());
+        List<GenericStack> merged = new ObjectArrayList<>(this.outputBuffer.size() + stacks.size());
         merged.addAll(this.outputBuffer);
         merged.addAll(stacks);
         this.outputBuffer.clear();

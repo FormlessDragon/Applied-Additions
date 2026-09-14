@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 public class AAECraftingUnitModelProvider {
+    public static final ICraftingUnitModelProvider FORMED_MODEL_PROVIDER = (definition, format, textureGetter) -> new AAECraftingUnitModelProvider(resolveType(definition)).bake(format, textureGetter);
     protected static final ResourceLocation STRUCTURE_FORMED_FACE = texture("quantum_structure_formed_face");
     protected static final ResourceLocation STRUCTURE_FORMED_SIDES = texture("quantum_structure_formed_sides");
     protected static final ResourceLocation STRUCTURE_ANIMATION_SIDES = texture("quantum_structure_powered_sides");
@@ -22,7 +23,6 @@ public class AAECraftingUnitModelProvider {
     protected static final ResourceLocation INTERNAL_ANIMATION_SIDES = texture("quantum_internal_powered_sides");
     protected static final ResourceLocation INTERNAL_ANIMATION_FACE = texture("quantum_internal_powered_animation");
     protected static final ResourceLocation INTERNAL_ANIMATION_FACE_TB = texture("quantum_internal_powered_animation_tb");
-    public static final ICraftingUnitModelProvider FORMED_MODEL_PROVIDER = (definition, format, textureGetter) -> new AAECraftingUnitModelProvider(resolveType(definition)).bake(format, textureGetter);
     private final AAECraftingUnitType type;
 
     public AAECraftingUnitModelProvider(AAECraftingUnitType type) {

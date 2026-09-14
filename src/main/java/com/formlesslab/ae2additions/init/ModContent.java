@@ -11,8 +11,17 @@ import ae2.recipes.handlers.InscriberProcessType;
 import ae2.recipes.handlers.InscriberRecipe;
 import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.api.AAECraftingUnitType;
-import com.formlesslab.ae2additions.block.assembler.*;
-import com.formlesslab.ae2additions.block.material.*;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixCrafter;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixFrame;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixGlass;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixPattern;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixSpeed;
+import com.formlesslab.ae2additions.block.assembler.BlockAssemblerMatrixWall;
+import com.formlesslab.ae2additions.block.material.BlockQuantumAlloyBlock;
+import com.formlesslab.ae2additions.block.material.BlockQuantumAlloyDoubleSlab;
+import com.formlesslab.ae2additions.block.material.BlockQuantumAlloySlab;
+import com.formlesslab.ae2additions.block.material.BlockQuantumAlloyStairs;
+import com.formlesslab.ae2additions.block.material.BlockQuantumAlloyWall;
 import com.formlesslab.ae2additions.block.quantum.BlockAAECraftingUnit;
 import com.formlesslab.ae2additions.block.reaction.BlockReactionChamber;
 import com.formlesslab.ae2additions.block.wireless.BlockWirelessConnector;
@@ -22,7 +31,18 @@ import com.formlesslab.ae2additions.fluid.QuantumInfusionFluid;
 import com.formlesslab.ae2additions.item.ItemInfinityCell;
 import com.formlesslab.ae2additions.item.ItemWirelessConnectorUpgrade;
 import com.formlesslab.ae2additions.item.ItemWirelessTool;
-import com.formlesslab.ae2additions.tile.*;
+import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixCrafter;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixFrame;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixGlass;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixPattern;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixSpeed;
+import com.formlesslab.ae2additions.tile.TileAssemblerMatrixWall;
+import com.formlesslab.ae2additions.tile.TileReactionChamber;
+import com.formlesslab.ae2additions.tile.TileWirelessConnector;
+import com.formlesslab.ae2additions.tile.TileWirelessHub;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -48,7 +68,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Tags.MOD_ID)
@@ -124,11 +149,11 @@ public final class ModContent {
         ASSEMBLER_MATRIX_CRAFTER = new BlockAssemblerMatrixCrafter();
         ASSEMBLER_MATRIX_SPEED = new BlockAssemblerMatrixSpeed();
 
-        BLOCKS = new ArrayList<>();
-        ITEMS = new ArrayList<>();
-        MODELS = new ArrayList<>();
-        TILE_ENTITIES = new ArrayList<>();
-        INFINITY_CELL_VARIANTS = new LinkedHashMap<>();
+        BLOCKS = new ObjectArrayList<>();
+        ITEMS = new ObjectArrayList<>();
+        MODELS = new ObjectArrayList<>();
+        TILE_ENTITIES = new ObjectArrayList<>();
+        INFINITY_CELL_VARIANTS = new Object2ObjectLinkedOpenHashMap<>();
 
         registerItem(WIRELESS_TOOL, "wireless_tool");
         registerItem(WIRELESS_CONNECTOR_UPGRADE, "wireless_connector_upgrade");
@@ -222,7 +247,7 @@ public final class ModContent {
         String variantId = validateVariantId(name);
         Objects.requireNonNull(keySuppliers, "keySuppliers");
 
-        List<AEKey> keys = new ArrayList<>(keySuppliers.size());
+        List<AEKey> keys = new ObjectArrayList<>(keySuppliers.size());
         for (Supplier<? extends AEKey> supplier : keySuppliers) {
             keys.add(Objects.requireNonNull(Objects.requireNonNull(supplier, "keySupplier").get(), "Infinity cell key supplier returned null"));
         }
@@ -243,7 +268,7 @@ public final class ModContent {
      * Returns defensive copies for the creative tab and JEI integration.
      */
     public static synchronized List<ItemStack> getInfinityCellVariants() {
-        List<ItemStack> result = new ArrayList<>(INFINITY_CELL_VARIANTS.size());
+        List<ItemStack> result = new ObjectArrayList<>(INFINITY_CELL_VARIANTS.size());
         for (ItemStack stack : INFINITY_CELL_VARIANTS.values()) {
             result.add(stack.copy());
         }

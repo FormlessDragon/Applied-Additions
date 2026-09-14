@@ -34,6 +34,7 @@ import java.util.List;
 public class TileWirelessConnector extends AENetworkedTile implements ServerTickingTile, IUpgradeableObject, IColorableBlockEntity, WirelessNode, WirelessEndpoint {
 
     private final WirelessConnection connection = new WirelessConnection(this);
+    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_CONNECTOR), 4, this::onUpgradesChanged);
     private boolean updateStatus = true;
     private long frequency;
     private double powerUse = 1.0;
@@ -70,8 +71,6 @@ public class TileWirelessConnector extends AENetworkedTile implements ServerTick
             this.reactive();
         }
     }
-
-    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.WIRELESS_CONNECTOR), 4, this::onUpgradesChanged);
 
     @Override
     public void onMainNodeStateChanged(IGridNodeListener.State reason) {
@@ -309,8 +308,6 @@ public class TileWirelessConnector extends AENetworkedTile implements ServerTick
         this.updatePowerUsage();
         this.saveChanges();
     }
-
-
 
 
 }

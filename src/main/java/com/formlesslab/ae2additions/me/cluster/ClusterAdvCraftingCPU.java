@@ -17,19 +17,25 @@ import ae2.crafting.inv.ListCraftingInventory;
 import ae2.me.cluster.IAECluster;
 import ae2.me.cluster.MBCalculator;
 import ae2.me.helpers.MachineSource;
-import ae2.tile.crafting.TileCraftingMonitor;
+import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class ClusterAdvCraftingCPU implements IAECluster {
     private static final String TAG_CPUS = "cpus";
@@ -37,16 +43,17 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     private static final String TAG_KEY = "key";
     private static final String TAG_BYTES = "bytes";
     private static final String TAG_CPU = "cpu";
+    private static final String TAG_ORDINAL = "ordinal";
     private static final String TAG_CONFIG = "config";
     private static int nextGuiClusterId = 1;
     private final BlockPos boundsMin;
     private final BlockPos boundsMax;
     private final int guiClusterId;
 
-    private final Map<UUID, AdvCraftingCPU> activeCpus = new HashMap<>();
+    private final Map<UUID, AdvCraftingCPU> activeCpus = new Object2ObjectOpenHashMap<>();
     private final List<TileAdvCraftingBlock> quantumBlockEntities = new ObjectArrayList<>();
-    private final List<TileCraftingMonitor> status = new ArrayList<>();
     private final IConfigManager configManager;
+    private final ResourceLocation cpuListGroupId;
     private AdvCraftingCPU remainingStorageCpu;
     private ITextComponent myName = null;
     private boolean destroyed = false;
@@ -56,6 +63,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     private MachineSource machineSrc = null;
     private int accelerator = 0;
     private int acceleratorMultiplier = 0;
+    private int nextCpuOrdinal = 0;
     private UUID lastSelectedCpuId;
     private boolean lastSelectedRemainingCapacity;
 
@@ -63,6 +71,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
         this.boundsMin = boundsMin.toImmutable();
         this.boundsMax = boundsMax.toImmutable();
         this.guiClusterId = nextGuiClusterId++;
+        this.cpuListGroupId = new ResourceLocation(Tags.MOD_ID, "quantum_computer/" + this.guiClusterId);
 
         this.configManager = IConfigManager.builder(this::markDirty).registerSetting(Settings.CPU_SELECTION_MODE, CpuSelectionMode.ANY).build();
     }
@@ -164,7 +173,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     }
 
     public void cancelJobs() {
-        for (UUID id : new ArrayList<>(this.activeCpus.keySet())) {
+        for (UUID id : new ObjectArrayList<>(this.activeCpus.keySet())) {
             this.killCpu(id, false);
         }
         this.postCpuChange();
@@ -186,6 +195,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
         AdvCraftingCPU cpu = new AdvCraftingCPU(this, id, plan.bytes());
         ICraftingSubmitResult result = cpu.craftingLogic.trySubmitJob(grid, plan, src, requester);
         if (result.successful()) {
+            cpu.setListOrdinal(this.takeNextCpuOrdinal());
             this.activeCpus.put(id, cpu);
             this.recalculateRemainingStorage();
             this.updateGridForChangedCpu(this);
@@ -210,10 +220,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     }
 
     public void updateOutput(GenericStack finalOutput) {
-        GenericStack stack = finalOutput != null && finalOutput.amount() <= 0 ? null : finalOutput;
-        for (var monitor : this.status) {
-            monitor.setJob(stack);
-        }
+
     }
 
     public IActionSource getSrc() {
@@ -274,6 +281,7 @@ public class ClusterAdvCraftingCPU implements IAECluster {
             NBTTagCompound child = new NBTTagCompound();
             child.setString(TAG_KEY, entry.getKey().toString());
             child.setLong(TAG_BYTES, entry.getValue().bytes);
+            child.setInteger(TAG_ORDINAL, entry.getValue().getListOrdinal());
             NBTTagCompound cpuData = new NBTTagCompound();
             entry.getValue().writeToNBT(cpuData);
             child.setTag(TAG_CPU, cpuData);
@@ -288,12 +296,15 @@ public class ClusterAdvCraftingCPU implements IAECluster {
 
     public void readFromNBT(NBTTagCompound data) {
         this.activeCpus.clear();
+        this.nextCpuOrdinal = 0;
         NBTTagList cpuList = data.getTagList(data.hasKey(TAG_CPUS, 9) ? TAG_CPUS : TAG_CPU_LIST_COMPAT, 10);
         for (int i = 0; i < cpuList.tagCount(); i++) {
             NBTTagCompound child = cpuList.getCompoundTagAt(i);
             UUID id = child.hasKey(TAG_KEY, 8) ? UUID.fromString(child.getString(TAG_KEY)) : UUID.randomUUID();
             long bytes = child.getLong(TAG_BYTES);
             AdvCraftingCPU cpu = new AdvCraftingCPU(this, id, bytes);
+            cpu.setListOrdinal(child.hasKey(TAG_ORDINAL, 3) ? child.getInteger(TAG_ORDINAL) : i);
+            this.nextCpuOrdinal = Math.max(this.nextCpuOrdinal, cpu.getListOrdinal() + 1);
             this.activeCpus.put(id, cpu);
             cpu.readFromNBT(child.hasKey(TAG_CPU, 10) ? child.getCompoundTag(TAG_CPU) : child);
         }
@@ -361,38 +372,54 @@ public class ClusterAdvCraftingCPU implements IAECluster {
     }
 
     public List<ListCraftingInventory> getInventories() {
-        List<ListCraftingInventory> inventories = new ArrayList<>();
+        List<ListCraftingInventory> inventories = new ObjectArrayList<>();
         for (AdvCraftingCPU cpu : this.activeCpus.values()) {
             inventories.add(cpu.getInventory());
         }
         return inventories;
     }
 
+    /**
+     * Side effect free view of the CPUs this cluster currently owns. Safe to call while the crafting service is
+     * rebuilding its CPU list; use {@link #pruneFinishedCpus()} to actually retire finished CPUs.
+     */
     public List<AdvCraftingCPU> getActiveCPUs() {
-        List<AdvCraftingCPU> cpus = new ArrayList<>();
-        List<UUID> remove = new ArrayList<>();
+        return new ObjectArrayList<>(this.activeCpus.values());
+    }
+
+    /**
+     * Returns the leftovers of every idle CPU to the network and retires the ones that ended up empty.
+     *
+     * @return whether at least one CPU was retired
+     */
+    public boolean pruneFinishedCpus() {
+        List<UUID> remove = null;
         for (Map.Entry<UUID, AdvCraftingCPU> entry : this.activeCpus.entrySet()) {
             AdvCraftingCPU cpu = entry.getValue();
             if (cpu.craftingLogic.hasJob()) {
-                cpus.add(cpu);
-            } else {
-                cpu.craftingLogic.storeItems();
-                if (cpu.isMarkedForDeletion() || cpu.getInventory().list.isEmpty()) {
-                    remove.add(entry.getKey());
-                } else {
-                    cpus.add(cpu);
+                continue;
+            }
+
+            cpu.craftingLogic.storeItems();
+            if (cpu.isMarkedForDeletion() || cpu.getInventory().list.isEmpty()) {
+                if (remove == null) {
+                    remove = new ObjectArrayList<>();
                 }
+                remove.add(entry.getKey());
             }
         }
+
+        if (remove == null) {
+            return false;
+        }
+
         for (UUID id : remove) {
             this.activeCpus.remove(id);
             this.clearLastSelectedCpu(id);
         }
-        if (!remove.isEmpty()) {
-            this.recalculateRemainingStorage();
-            this.postCpuChange();
-        }
-        return cpus;
+        this.recalculateRemainingStorage();
+        this.postCpuChange();
+        return true;
     }
 
     public AdvCraftingCPU getRemainingCapacityCPU() {
@@ -400,6 +427,39 @@ public class ClusterAdvCraftingCPU implements IAECluster {
             this.remainingStorageCpu = new AdvCraftingCPU(this, this.remainingStorage);
         }
         return this.remainingStorageCpu;
+    }
+
+    /**
+     * Identifies this cluster in the AE2 crafting status list, so all of its CPUs stay next to each other no matter
+     * which sort mode the player picked.
+     */
+    public ResourceLocation getCpuListGroupId() {
+        return this.cpuListGroupId;
+    }
+
+    /**
+     * Whether {@code ordinal} is the smallest list ordinal among this cluster's job CPUs, which makes the owning CPU
+     * the first row of the group.
+     */
+    boolean isFirstCpuOrdinal(int ordinal) {
+        for (AdvCraftingCPU cpu : this.activeCpus.values()) {
+            if (cpu.getListOrdinal() < ordinal) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    boolean hasActiveCpus() {
+        return !this.activeCpus.isEmpty();
+    }
+
+    private int takeNextCpuOrdinal() {
+        // AdvCraftingCPU.CAPACITY_ORDINAL is reserved for the remaining-capacity row, which always sorts last.
+        if (this.nextCpuOrdinal == AdvCraftingCPU.CAPACITY_ORDINAL) {
+            this.nextCpuOrdinal = 0;
+        }
+        return this.nextCpuOrdinal++;
     }
 
     public AdvCraftingCPU getLastSelectedCpu() {
@@ -447,6 +507,22 @@ public class ClusterAdvCraftingCPU implements IAECluster {
         if (node != null) {
             node.grid().postEvent(new GridCraftingCpuChange(node));
         }
+    }
+
+    /**
+     * Moves free cluster capacity into a job CPU's storage reservation, or with a negative amount back out of it.
+     * Merging a second plan into a running CPU reserves the new plan's bytes here first so the cluster never
+     * over-commits; the CPU list and the remaining-capacity CPU follow through {@link #recalculateRemainingStorage()}.
+     *
+     * @return whether the cluster had enough free capacity for a positive delta
+     */
+    boolean moveFreeCapacity(AdvCraftingCPU cpu, long delta) {
+        if (delta > 0 && this.remainingStorage < delta) {
+            return false;
+        }
+        cpu.expandReservation(delta);
+        this.recalculateRemainingStorage();
+        return true;
     }
 
     public void recalculateRemainingStorage() {

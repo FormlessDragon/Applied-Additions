@@ -10,11 +10,11 @@ import net.minecraft.item.Item;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 
-import java.util.ArrayList;
 import java.util.List;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class InfoBar {
-    private final List<Widget> widgets = new ArrayList<>();
+    private final List<Widget> widgets = new ObjectArrayList<>();
 
     public void render(int x, int y) {
         int maxHeight = this.widgets.stream().mapToInt(Widget::getHeight).max().orElse(0);

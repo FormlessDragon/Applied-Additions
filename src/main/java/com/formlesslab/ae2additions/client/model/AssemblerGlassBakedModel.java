@@ -1,5 +1,7 @@
 package com.formlesslab.ae2additions.client.model;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -16,7 +18,11 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class AssemblerGlassBakedModel implements IBakedModel {
@@ -80,7 +86,7 @@ public class AssemblerGlassBakedModel implements IBakedModel {
     }
 
     private static Map<FaceCorner, List<Vector3f>> createVertexMap() {
-        Map<FaceCorner, List<Vector3f>> map = new HashMap<>();
+        Map<FaceCorner, List<Vector3f>> map = new Object2ObjectOpenHashMap<>();
         map.put(new FaceCorner(EnumFacing.EAST, LU), list(v(1, 1, 1), v(1, 0.5F, 1), v(1, 0.5F, 0.5F), v(1, 1, 0.5F)));
         map.put(new FaceCorner(EnumFacing.EAST, RU), list(v(1, 1, 0.5F), v(1, 0.5F, 0.5F), v(1, 0.5F, 0), v(1, 1, 0)));
         map.put(new FaceCorner(EnumFacing.EAST, LD), list(v(1, 0.5F, 1), v(1, 0, 1), v(1, 0, 0.5F), v(1, 0.5F, 0.5F)));
@@ -125,7 +131,7 @@ public class AssemblerGlassBakedModel implements IBakedModel {
         if (connect == null) {
             return createFullFace(side);
         }
-        ArrayList<BakedQuad> quads = new ArrayList<>(5);
+        ObjectArrayList<BakedQuad> quads = new ObjectArrayList<>(5);
         addCornerQuad(quads, side, connect.getIndex(side, LU), LU);
         addCornerQuad(quads, side, connect.getIndex(side, RU), RU);
         addCornerQuad(quads, side, connect.getIndex(side, LD), LD);
@@ -172,7 +178,7 @@ public class AssemblerGlassBakedModel implements IBakedModel {
     }
 
     private List<BakedQuad> createFullCube() {
-        ArrayList<BakedQuad> quads = new ArrayList<>(6);
+        ObjectArrayList<BakedQuad> quads = new ObjectArrayList<>(6);
         for (EnumFacing face : EnumFacing.VALUES) {
             quads.addAll(createFullFace(face));
         }
@@ -180,7 +186,7 @@ public class AssemblerGlassBakedModel implements IBakedModel {
     }
 
     private List<BakedQuad> createFullFace(EnumFacing face) {
-        ArrayList<BakedQuad> quads = new ArrayList<>(1);
+        ObjectArrayList<BakedQuad> quads = new ObjectArrayList<>(1);
         addQuad(quads, face, this.fullGlass, FACE_MAP.get(face), 0, 0, 1, 1);
         return quads;
     }

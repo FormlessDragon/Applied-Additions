@@ -25,7 +25,10 @@ public final class QuantumComputerModelOverride {
     }
 
     private static void putFormedVariant(IRegistry<ModelResourceLocation, IBakedModel> registry, String path, boolean powered, IBakedModel model) {
-        String variant = "formed=true,powered=" + powered;
+        // Only the multiblocked shell variants reference the formed model; standalone units resolve to plain json
+        // models through the blockstate file. The variant string is built in alphabetical property order, matching
+        // how the game composes it from the block state.
+        String variant = "formed=true,multiblocked=true,powered=" + powered;
         putModel(registry, "quantum_crafting/" + path + "_formed", variant, model);
         putModel(registry, "block/quantum_crafting/" + path + "_formed", variant, model);
         putModel(registry, path, variant, model);

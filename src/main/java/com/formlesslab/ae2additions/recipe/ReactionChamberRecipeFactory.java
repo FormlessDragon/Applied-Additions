@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -17,14 +18,13 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
 public class ReactionChamberRecipeFactory implements IRecipeFactory {
     public static ReactionChamberRecipe fromJson(JsonObject json, JsonContext ctx) {
         JsonArray inputItems = JsonUtils.getJsonArray(json, "input_items");
-        List<ReactionChamberRecipe.SizedIngredient> items = new ArrayList<>(inputItems.size());
+        List<ReactionChamberRecipe.SizedIngredient> items = new ObjectArrayList<>(inputItems.size());
         for (JsonElement element : inputItems) {
             JsonObject input = JsonUtils.getJsonObject(element, "input item");
             int amount = JsonUtils.getInt(input, "amount", 1);
@@ -64,8 +64,8 @@ public class ReactionChamberRecipeFactory implements IRecipeFactory {
             throw new IllegalArgumentException("Reaction chamber recipe must define itemOutput or fluidOutput");
         }
         return new ReactionChamberRecipe(items, inputFluid.getFluid(), inputFluid.amount, energy,
-                itemOutput == null ? ItemStack.EMPTY : itemOutput.copy(),
-                fluidOutput == null ? null : fluidOutput.copy());
+            itemOutput == null ? ItemStack.EMPTY : itemOutput.copy(),
+            fluidOutput == null ? null : fluidOutput.copy());
     }
 
     private static Ingredient readIngredient(JsonElement element, JsonContext ctx) {

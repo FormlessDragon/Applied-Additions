@@ -21,8 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 
-import java.awt.*;
+import java.awt.Rectangle;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
@@ -69,7 +70,7 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
-        int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
+        int textColor = Objects.requireNonNull(this.style).getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
         Point powerPos = this.resolveWidget("powerText");
         this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.power", Platform.formatPower(this.container.powerUse, true)).getUnformattedText(), powerPos.x(), powerPos.y(), textColor);
         Point channelsPos = this.resolveWidget("channelsText");
@@ -136,11 +137,11 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
     }
 
     private Point resolveWidget(String id) {
-        return this.style.getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
+        return Objects.requireNonNull(this.style).getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
     }
 
     private Rectangle resolveWidgetBounds(String id) {
-        WidgetStyle widget = this.style.getWidget(id);
+        WidgetStyle widget = Objects.requireNonNull(this.style).getWidget(id);
         Point pos = widget.resolve(new Rectangle(0, 0, this.xSize, this.ySize));
         return new Rectangle(pos.x(), pos.y(), widget.getWidth(), widget.getHeight());
     }

@@ -1,12 +1,12 @@
 {
-    "$schema": "schema.json",
+  "$schema": "schema.json",
   "includes": [
     "crafting_status.json"
   ],
     "widgets": {
         "selectionMode": {
             "left": -46,
-            "bottom": 24,
+            "bottom": 26,
             "width": 20,
             "height": 20
         }

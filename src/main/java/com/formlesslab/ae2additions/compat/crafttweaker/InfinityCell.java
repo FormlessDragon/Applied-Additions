@@ -10,10 +10,10 @@ import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * CraftTweaker registration API for script-defined infinity cells.
@@ -83,7 +83,7 @@ public final class InfinityCell {
      */
     @ZenMethod
     public static IItemStack register(String name, IItemStack[] items, ILiquidStack[] fluids) {
-        List<Object> keys = new ArrayList<>();
+        List<Object> keys = new ObjectArrayList<>();
         if (items != null) {
             Collections.addAll(keys, items);
         }

@@ -18,6 +18,7 @@ import com.formlesslab.ae2additions.network.SAssemblerMatrixUpdate;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixPattern;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -26,14 +27,14 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 
 public class ContainerAssemblerMatrix extends AEBaseContainer implements AssemblerMatrixMenu, AssemblerMatrixServerActionHost {
 
     private final TileAssemblerMatrixBase host;
-    private final Map<Long, ItemStack[]> patternSnapshots = new LinkedHashMap<>();
+    private final Long2ObjectMap<ItemStack[]> patternSnapshots = new Long2ObjectLinkedOpenHashMap<>();
 
     @GuiSync(7)
     private int queuedJobs;
@@ -277,19 +278,19 @@ public class ContainerAssemblerMatrix extends AEBaseContainer implements Assembl
             this.sendPatternUpdate(player, pattern, force);
         }
 
-        Iterator<Long> knownIds = this.patternSnapshots.keySet().iterator();
+        LongIterator knownIds = this.patternSnapshots.keySet().iterator();
         while (knownIds.hasNext()) {
-            long knownId = knownIds.next();
+            long knownId = knownIds.nextLong();
             if (this.findPattern(knownId) == null) {
-                ModNetworks.sendToClient(player, new SAssemblerMatrixUpdate(knownId, new Int2ObjectOpenHashMap<>()));
+                ModNetworks.sendToClient(player, new SAssemblerMatrixUpdate(knownId, Int2ObjectMaps.emptyMap()));
                 knownIds.remove();
             }
         }
     }
 
     private void sendRemovedPatternUpdates(EntityPlayerMP player) {
-        for (Long patternId : this.patternSnapshots.keySet()) {
-            ModNetworks.sendToClient(player, new SAssemblerMatrixUpdate(patternId, new Int2ObjectOpenHashMap<>()));
+        for (long patternId : this.patternSnapshots.keySet()) {
+            ModNetworks.sendToClient(player, new SAssemblerMatrixUpdate(patternId, Int2ObjectMaps.emptyMap()));
         }
         this.patternSnapshots.clear();
     }

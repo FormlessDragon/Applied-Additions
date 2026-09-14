@@ -6,6 +6,7 @@ import com.formlesslab.ae2additions.AppliedAdditions;
 import com.formlesslab.ae2additions.init.ModGuiHandler;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.util.TooltipHelper;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
@@ -21,7 +22,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase> extends AEBaseTileBlock<M> {
@@ -77,7 +77,7 @@ public abstract class BlockAssemblerMatrixBase<M extends TileAssemblerMatrixBase
         M tile = this.getTileEntity(world, pos);
         if (tile != null) {
             if (!world.isRemote && tile.isCore()) {
-                List<ItemStack> drops = new ArrayList<>();
+                List<ItemStack> drops = new ObjectArrayList<>();
                 tile.drainClusterPatternsTo(drops);
                 Platform.spawnDrops(world, pos, drops);
             }

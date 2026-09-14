@@ -4,6 +4,8 @@ import ae2.client.render.VertexFormats;
 import ae2.helpers.crafting.CraftingCubeState;
 import com.formlesslab.ae2additions.block.quantum.BlockAAEAbstractCraftingUnit;
 import com.formlesslab.ae2additions.client.util.QuantumComputerConnect;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.IBakedModel;
@@ -22,7 +24,12 @@ import net.minecraftforge.common.property.IExtendedBlockState;
 
 import javax.annotation.Nullable;
 import javax.vecmath.Vector3f;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 
 public class QuantumComputerBakedModel implements IBakedModel {
     private static final int LU = 0;
@@ -121,7 +128,7 @@ public class QuantumComputerBakedModel implements IBakedModel {
     }
 
     private static Map<FaceCorner, List<Vector3f>> createVertexMap() {
-        Map<FaceCorner, List<Vector3f>> map = new HashMap<>();
+        Map<FaceCorner, List<Vector3f>> map = new Object2ObjectOpenHashMap<>();
         map.put(new FaceCorner(EnumFacing.EAST, LU), list(v(1, 1, 1), v(1, 0.5F, 1), v(1, 0.5F, 0.5F), v(1, 1, 0.5F)));
         map.put(new FaceCorner(EnumFacing.EAST, RU), list(v(1, 1, 0.5F), v(1, 0.5F, 0.5F), v(1, 0.5F, 0), v(1, 1, 0)));
         map.put(new FaceCorner(EnumFacing.EAST, LD), list(v(1, 0.5F, 1), v(1, 0, 1), v(1, 0, 0.5F), v(1, 0.5F, 0.5F)));
@@ -166,7 +173,7 @@ public class QuantumComputerBakedModel implements IBakedModel {
         QuantumComputerConnect connect = getConnect(state);
         boolean powered = state != null && state.getValue(BlockAAEAbstractCraftingUnit.POWERED);
         BlockRenderLayer layer = MinecraftForgeClient.getRenderLayer();
-        ArrayList<BakedQuad> quads = new ArrayList<>(this.structure ? 8 : 6);
+        ObjectArrayList<BakedQuad> quads = new ObjectArrayList<>(this.structure ? 8 : 6);
 
         if (!this.structure || layer == null || layer == BlockRenderLayer.TRANSLUCENT) {
             this.addFaceQuad(quads, side, connect.getFace(side), powered);
@@ -337,7 +344,7 @@ public class QuantumComputerBakedModel implements IBakedModel {
     }
 
     private List<BakedQuad> createItemQuads() {
-        ArrayList<BakedQuad> quads = new ArrayList<>(EnumFacing.values().length * 5);
+        ObjectArrayList<BakedQuad> quads = new ObjectArrayList<>(EnumFacing.values().length * 5);
         QuantumComputerConnect connect = QuantumComputerConnect.from(BlockPos.ORIGIN, EnumSet.noneOf(EnumFacing.class));
         for (EnumFacing side : EnumFacing.values()) {
             this.addFaceQuad(quads, side, connect.getFace(side), false);

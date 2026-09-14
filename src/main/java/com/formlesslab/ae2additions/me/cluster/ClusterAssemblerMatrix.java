@@ -3,6 +3,7 @@ package com.formlesslab.ae2additions.me.cluster;
 import ae2.api.config.Setting;
 import ae2.api.crafting.IPatternDetails;
 import ae2.api.networking.IGridNode;
+import ae2.api.networking.crafting.ICraftingProvider;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.networking.ticking.TickRateModulation;
 import ae2.api.stacks.KeyCounter;
@@ -15,27 +16,34 @@ import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixCrafter;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixFunction;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixPattern;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class ClusterAssemblerMatrix implements IAECluster {
     private static final double MAX_QUEUE_PROGRESS = 100;
 
     private final BlockPos boundsMin;
     private final BlockPos boundsMax;
-    private final List<TileAssemblerMatrixBase> tiles = new ArrayList<>();
-    private final List<TileAssemblerMatrixPattern> patterns = new ArrayList<>();
-    private final Set<TileAssemblerMatrixCrafter> crafters = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final List<TileAssemblerMatrixBase> tiles = new ObjectArrayList<>();
+    private final List<TileAssemblerMatrixPattern> patterns = new ObjectArrayList<>();
+    private final Set<TileAssemblerMatrixCrafter> crafters = new ReferenceOpenHashSet<>();
     private boolean isDestroyed;
     private ITextComponent myName;
     private MachineSource machineSrc;
     private IConfigManager manager = NullConfigManager.INSTANCE;
     private int speedCore;
+    private int priority;
     private double queueProgress;
     private boolean queueReboot = true;
     private long lastQueueTick = Long.MIN_VALUE;
@@ -90,16 +98,16 @@ public class ClusterAssemblerMatrix implements IAECluster {
         return count;
     }
 
-    public int getAvailableQueueAmount() {
-        return Math.max(0, getTotalQueueCapacity() - this.getQueuedJobAmount());
-    }
-
     public int getAvailableParallelAmount() {
         return Math.max(0, getTotalParallelCapacity() - this.getUsedParallelAmount());
     }
 
+    /**
+     * The largest number of pattern pushes that can currently be merged into the queue. The shared parallel capacity
+     * is the only throttle: the queue itself is unbounded, so pushes are never rejected for queue space.
+     */
     public int getMaxPatternPushMultiplier(int maxMultiplier) {
-        if (maxMultiplier <= 0 || this.getAvailableQueueAmount() <= 0) {
+        if (maxMultiplier <= 0) {
             return 0;
         }
         return Math.min(maxMultiplier, this.getAvailableParallelAmount());
@@ -111,6 +119,23 @@ public class ClusterAssemblerMatrix implements IAECluster {
 
     public double getQueueProgress() {
         return this.queueProgress;
+    }
+
+    /**
+     * Crafting priority of this matrix's patterns in AE2S's pattern index. Higher values win when several providers
+     * offer the same output.
+     */
+    public int getPatternPriority() {
+        return this.priority;
+    }
+
+    public void setPatternPriority(int priority) {
+        if (this.priority == priority) {
+            return;
+        }
+        this.priority = priority;
+        this.savePriority();
+        this.requestPatternsUpdate();
     }
 
     public void addPattern(TileAssemblerMatrixPattern pattern) {
@@ -159,6 +184,7 @@ public class ClusterAssemblerMatrix implements IAECluster {
             core.setPreviousState(null);
         }
         this.manager = core.getConfigManager();
+        this.priority = core.getClusterPriority();
         for (Setting<?> setting : this.manager.getSettings()) {
             this.broadcastExistingSetting(setting, core);
         }
@@ -201,6 +227,9 @@ public class ClusterAssemblerMatrix implements IAECluster {
                 MBCalculator.setModificationInProgress(null);
             }
         }
+        // Patterns must leave AE2S's crafting index immediately; with the cluster reference cleared the providers
+        // now report no patterns, so the refresh removes them.
+        this.requestPatternsUpdate();
     }
 
     @Override
@@ -239,7 +268,7 @@ public class ClusterAssemblerMatrix implements IAECluster {
     }
 
     public boolean isBusy() {
-        return this.getAvailableQueueAmount() <= 0 || this.getAvailableParallelAmount() <= 0;
+        return this.getAvailableParallelAmount() <= 0;
     }
 
     public void cancelJobs() {
@@ -254,13 +283,13 @@ public class ClusterAssemblerMatrix implements IAECluster {
     }
 
     public boolean pushCraftingJob(IPatternDetails patternDetails, KeyCounter[] inputHolder, int craftCount) {
-        if (craftCount <= 0 || this.getAvailableQueueAmount() <= 0 || craftCount > this.getAvailableParallelAmount()) {
+        if (craftCount <= 0 || craftCount > this.getAvailableParallelAmount()) {
             return false;
         }
 
         TileAssemblerMatrixCrafter crafter = null;
         for (TileAssemblerMatrixCrafter candidate : this.crafters) {
-            if (candidate.hasQueueSpace() && (crafter == null || candidate.getQueuedJobCount() < crafter.getQueuedJobCount())) {
+            if (crafter == null || candidate.getQueuedJobCount() < crafter.getQueuedJobCount()) {
                 crafter = candidate;
             }
         }
@@ -339,12 +368,26 @@ public class ClusterAssemblerMatrix implements IAECluster {
         return this.myName;
     }
 
-    private int getTotalQueueCapacity() {
-        return saturatedMultiply(this.crafters.size(), TileAssemblerMatrixCrafter.getMaxQueueSize());
-    }
-
     private int getTotalParallelCapacity() {
         return saturatedMultiply(this.crafters.size(), TileAssemblerMatrixCrafter.getMaxParallel());
+    }
+
+    private void savePriority() {
+        TileAssemblerMatrixBase core = this.getCore();
+        if (core != null) {
+            core.setClusterPriority(this.priority);
+            core.saveChanges();
+        }
+    }
+
+    /**
+     * Re-registers this matrix's patterns with AE2S's crafting service; called when priority changes and on
+     * formation and destruction of the cluster.
+     */
+    public void requestPatternsUpdate() {
+        for (TileAssemblerMatrixPattern pattern : this.patterns) {
+            ICraftingProvider.requestUpdate(pattern.getMainNode());
+        }
     }
 
     private void syncQueueProgress() {

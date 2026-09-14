@@ -23,6 +23,7 @@ import org.lwjgl.input.Mouse;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 
 public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnector> {
     private final IconButton statusIcon;
@@ -47,10 +48,6 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
         this.highlightButton = new ConnectorIconButton(this::highlightRemote, style.getImage("highlightIcon"));
         this.highlightButton.setMessage(new TextComponentTranslation("gui.ae2additions.highlight.tooltip"));
         this.widgets.add("highlight", this.highlightButton);
-    }
-
-    private static float clamp(float value, float min, float max) {
-        return Math.max(min, Math.min(max, value));
     }
 
     static ITextComponent remoteText(boolean hasRemote, int x, int y, int z) {
@@ -78,7 +75,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
     @Override
     public void drawFG(int offsetX, int offsetY, int mouseX, int mouseY) {
         super.drawFG(offsetX, offsetY, mouseX, mouseY);
-        int textColor = this.style.getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
+        int textColor = Objects.requireNonNull(this.style).getColor(PaletteColor.DEFAULT_TEXT_COLOR).toARGB() & 0xFFFFFF;
 
         Point statusPos = this.resolveWidget("statusText");
         this.fontRenderer.drawString(new TextComponentTranslation("gui.ae2additions.status", new TextComponentTranslation(statusKey(this.container.status)).getUnformattedText()).getUnformattedText(), statusPos.x(), statusPos.y(), textColor);
@@ -149,7 +146,7 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
 
             if (this.dragButton == 0) {
                 this.remoteRotationY += dx;
-                this.remoteRotationX = clamp(this.remoteRotationX + dy, -90.0F, 90.0F);
+                this.remoteRotationX = Math.clamp(this.remoteRotationX + dy, -90.0F, 90.0F);
             } else {
                 this.remoteOffsetX += dx;
                 this.remoteOffsetY += dy;
@@ -166,7 +163,8 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
             int mouseX = Mouse.getEventX() * this.width / this.mc.displayWidth;
             int mouseY = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
             if (canInteractWithRemote(mouseX, mouseY)) {
-                this.remoteZoom = clamp(this.remoteZoom + (delta > 0 ? 0.1F : -0.1F), 0.5F, 2.5F);
+                float value = this.remoteZoom + (delta > 0 ? 0.1F : -0.1F);
+                this.remoteZoom = Math.clamp(value, 0.5F, 2.5F);
                 return;
             }
         }
@@ -178,11 +176,11 @@ public class GuiWirelessConnector extends GuiUpgradeable<ContainerWirelessConnec
     }
 
     private Point resolveWidget(String id) {
-        return this.style.getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
+        return Objects.requireNonNull(this.style).getWidget(id).resolve(new Rectangle(0, 0, this.xSize, this.ySize));
     }
 
     private Rectangle resolveWidgetBounds(String id) {
-        WidgetStyle widget = this.style.getWidget(id);
+        WidgetStyle widget = Objects.requireNonNull(this.style).getWidget(id);
         Point pos = widget.resolve(new Rectangle(0, 0, this.xSize, this.ySize));
         return new Rectangle(pos.x(), pos.y(), widget.getWidth(), widget.getHeight());
     }

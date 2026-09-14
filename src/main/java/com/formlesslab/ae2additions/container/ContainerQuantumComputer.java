@@ -12,9 +12,13 @@ import com.formlesslab.ae2additions.client.util.QuantumComputerEntry;
 import com.formlesslab.ae2additions.client.util.QuantumComputerList;
 import com.formlesslab.ae2additions.me.cluster.AdvCraftingCPU;
 import com.formlesslab.ae2additions.me.cluster.ClusterAdvCraftingCPU;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.InventoryPlayer;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.WeakHashMap;
 
 public class ContainerQuantumComputer extends ContainerCraftingCPU {
     private static final String ACTION_SELECT_CPU = "selectCpu";
@@ -93,7 +97,7 @@ public class ContainerQuantumComputer extends ContainerCraftingCPU {
         }
 
         if (!this.lastCpuSet.equals(newCpuSet) || ++this.lastUpdate >= 20) {
-            this.lastCpuSet = new ArrayList<>(newCpuSet);
+            this.lastCpuSet = new ObjectArrayList<>(newCpuSet);
             this.cpuList = createCpuList();
             this.lastUpdate = 0;
         }
@@ -118,7 +122,7 @@ public class ContainerQuantumComputer extends ContainerCraftingCPU {
     }
 
     private QuantumComputerList createCpuList() {
-        List<QuantumComputerEntry> entries = new ArrayList<>(this.lastCpuSet.size());
+        List<QuantumComputerEntry> entries = new ObjectArrayList<>(this.lastCpuSet.size());
         for (ICraftingCPU cpu : this.lastCpuSet) {
             int serial = getOrAssignCpuSerial(cpu);
             CraftingJobStatus status = cpu.getJobStatus();

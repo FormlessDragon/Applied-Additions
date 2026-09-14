@@ -92,6 +92,8 @@ public class CalculatorAssemblerMatrix extends MBCalculator<TileAssemblerMatrixB
             }
         }
         cluster.done();
+        // Register the freshly formed matrix's patterns with AE2S's crafting service right away.
+        cluster.requestPatternsUpdate();
     }
 
     @Override

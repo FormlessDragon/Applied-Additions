@@ -14,15 +14,16 @@ import com.formlesslab.ae2additions.init.ModNetworks;
 import com.formlesslab.ae2additions.network.CReactionChamberOutputSides;
 import com.formlesslab.ae2additions.tile.TileReactionChamber;
 import com.formlesslab.ae2additions.util.FluidStackRenderer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.FluidStack;
+import org.jspecify.annotations.NonNull;
 
-import java.awt.*;
-import java.util.ArrayList;
+import java.awt.Rectangle;
 import java.util.List;
 
 public class GuiReactionChamber extends GuiUpgradeable<ContainerReactionChamber> {
@@ -50,7 +51,7 @@ public class GuiReactionChamber extends GuiUpgradeable<ContainerReactionChamber>
             }
 
             @Override
-            public List<ITextComponent> getTooltipMessage() {
+            public @NonNull List<ITextComponent> getTooltipMessage() {
                 return List.of(ButtonToolTips.OutputSideConfig.text(), ButtonToolTips.OutputSideConfigHint.text());
             }
         });
@@ -95,7 +96,7 @@ public class GuiReactionChamber extends GuiUpgradeable<ContainerReactionChamber>
             return false;
         }
 
-        List<String> tooltip = new ArrayList<>();
+        List<String> tooltip = new ObjectArrayList<>();
         tooltip.add(fluid.getFluid().getLocalizedName(new FluidStack(fluid.getFluid(), 1)));
         tooltip.add(TextFormatting.GRAY + "" + amount + " / " + TileReactionChamber.TANK_CAPACITY + " mB");
         this.drawTooltipLines(mouseX, mouseY, tooltip);

@@ -2,6 +2,7 @@ package com.formlesslab.ae2additions.compat.jei;
 
 import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.recipe.ReactionChamberRecipe;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeWrapper;
@@ -13,7 +14,6 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.FluidStack;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class ReactionChamberRecipeWrapper implements IRecipeWrapper {
         if (stacks.length == 0) {
             return Collections.emptyList();
         }
-        List<ItemStack> result = new ArrayList<>(stacks.length);
+        List<ItemStack> result = new ObjectArrayList<>(stacks.length);
         for (ItemStack stack : stacks) {
             ItemStack copy = stack.copy();
             copy.setCount(amount);
@@ -80,7 +80,7 @@ public class ReactionChamberRecipeWrapper implements IRecipeWrapper {
     }
 
     private List<List<ItemStack>> getItemInputs() {
-        List<List<ItemStack>> inputs = new ArrayList<>();
+        List<List<ItemStack>> inputs = new ObjectArrayList<>();
         for (ReactionChamberRecipe.SizedIngredient input : this.recipe.getItemInputs()) {
             inputs.add(expand(input.ingredient(), input.amount()));
         }

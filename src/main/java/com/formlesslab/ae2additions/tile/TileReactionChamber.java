@@ -1,6 +1,10 @@
 package com.formlesslab.ae2additions.tile;
 
-import ae2.api.config.*;
+import ae2.api.config.Actionable;
+import ae2.api.config.PowerMultiplier;
+import ae2.api.config.Setting;
+import ae2.api.config.Settings;
+import ae2.api.config.YesNo;
 import ae2.api.inventories.ISegmentedInventory;
 import ae2.api.inventories.InternalInventory;
 import ae2.api.inventories.ItemTransfer;
@@ -71,13 +75,13 @@ public class TileReactionChamber extends AENetworkedPoweredTile implements IGrid
     private final ConfigManager configManager = new ConfigManager(this::onConfigChanged);
     private final EnumMap<EnumFacing, ItemTransfer> neighbors = new EnumMap<>(EnumFacing.class);
     private final EnumSet<EnumFacing> outputSides = EnumSet.allOf(EnumFacing.class);
+    private final FluidTank inputTank = new SyncedTank(TANK_CAPACITY, this::onInputTankChanged);
+    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.REACTION_CHAMBER), 5, this::onUpgradesChanged);
     private int processingTime;
     private boolean working;
     private boolean powered;
     @Nullable
     private ReactionChamberRecipe cachedTask;
-    private final FluidTank inputTank = new SyncedTank(TANK_CAPACITY, this::onInputTankChanged);
-    private final IUpgradeInventory upgrades = UpgradeInventories.forMachine(Item.getItemFromBlock(ModContent.REACTION_CHAMBER), 5, this::onUpgradesChanged);
 
     public TileReactionChamber() {
         this.setInternalMaxPower(500000);
@@ -591,7 +595,7 @@ public class TileReactionChamber extends AENetworkedPoweredTile implements IGrid
         }
     }
 
-    private final class SyncedTank extends FluidTank {
+    private static final class SyncedTank extends FluidTank {
         private final Runnable changeListener;
 
         private SyncedTank(int capacity, Runnable changeListener) {
@@ -602,6 +606,13 @@ public class TileReactionChamber extends AENetworkedPoweredTile implements IGrid
         @Override
         protected void onContentsChanged() {
             this.changeListener.run();
+        }
+    }
+
+    private static final class InputFilter implements IAEItemFilter {
+        @Override
+        public boolean allowInsert(InternalInventory inv, int slot, ItemStack stack) {
+            return ModRecipes.isValidIngredient(stack);
         }
     }
 
@@ -624,13 +635,6 @@ public class TileReactionChamber extends AENetworkedPoweredTile implements IGrid
         @Override
         public FluidStack drain(int maxDrain, boolean doDrain) {
             return outputTank.drain(maxDrain, doDrain);
-        }
-    }
-
-    private final class InputFilter implements IAEItemFilter {
-        @Override
-        public boolean allowInsert(InternalInventory inv, int slot, ItemStack stack) {
-            return ModRecipes.isValidIngredient(stack);
         }
     }
 }

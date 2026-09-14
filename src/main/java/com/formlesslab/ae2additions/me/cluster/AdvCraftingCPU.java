@@ -3,6 +3,8 @@ package com.formlesslab.ae2additions.me.cluster;
 import ae2.api.config.CpuSelectionMode;
 import ae2.api.networking.IGrid;
 import ae2.api.networking.IGridNode;
+import ae2.api.networking.crafting.CraftingCpuGroup;
+import ae2.api.networking.crafting.CraftingJobOptions;
 import ae2.api.networking.crafting.CraftingJobStatus;
 import ae2.api.networking.crafting.ICraftingPlan;
 import ae2.api.networking.crafting.ICraftingRequester;
@@ -10,6 +12,8 @@ import ae2.api.networking.crafting.ICraftingSubmitResult;
 import ae2.api.networking.security.IActionSource;
 import ae2.api.stacks.GenericStack;
 import ae2.api.util.IConfigManager;
+import ae2.client.gui.Icon;
+import ae2.crafting.execution.CraftingSubmitResult;
 import ae2.crafting.execution.ElapsedTimeTracker;
 import ae2.crafting.inv.ListCraftingInventory;
 import ae2.me.cluster.implementations.CraftingCPUCluster;
@@ -23,9 +27,19 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class AdvCraftingCPU extends CraftingCPUCluster {
+    /**
+     * List ordinal of the remaining-capacity CPU, which always sorts to the end of its cluster's group.
+     */
+    static final int CAPACITY_ORDINAL = Integer.MAX_VALUE;
+
     final UUID uniqueId;
-    final long bytes;
     private final ClusterAdvCraftingCPU parent;
+    /**
+     * Storage reserved on the parent cluster for this CPU. Fixed at submission, but grows when further plans are
+     * merged in; see {@link #expandReservation(long)}.
+     */
+    long bytes;
+    private int listOrdinal;
     private boolean markedForDeletion;
 
     public AdvCraftingCPU(ClusterAdvCraftingCPU parent, UUID uniqueId, long bytes) {
@@ -37,6 +51,7 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
 
     AdvCraftingCPU(ClusterAdvCraftingCPU parent, long bytes) {
         this(parent, null, bytes);
+        this.listOrdinal = CAPACITY_ORDINAL;
     }
 
     @Override
@@ -57,7 +72,7 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
 
     @Override
     public boolean isBusy() {
-        return this.craftingLogic.hasJob();
+        return super.isBusy();
     }
 
     @Override
@@ -85,6 +100,63 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
             return this.parent.submitJob(grid, plan, src, requester);
         }
         return this.craftingLogic.trySubmitJob(grid, plan, src, requester);
+    }
+
+    /**
+     * The crafting service submits jobs through this overload. Without the override it would run on the inherited
+     * implementation, which submits straight into this CPU's logic and bypasses the parent cluster - the
+     * remaining-capacity CPU would swallow the job instead of the cluster splitting off a new CPU for it.
+     */
+    @Override
+    public ICraftingSubmitResult submitJob(IGrid grid, ICraftingPlan plan, IActionSource src, @Nullable ICraftingRequester requester, CraftingJobOptions options) {
+        return this.submitJob(grid, plan, src, requester);
+    }
+
+    /**
+     * Merging is decided against the cluster's free capacity, not this CPU's original reservation: a second plan
+     * with the same output may join a running CPU as long as the cluster can still reserve its bytes.
+     */
+    @Override
+    public boolean canMergeJob(ICraftingPlan plan) {
+        if (this.uniqueId == null || plan.simulation()) {
+            return false;
+        }
+        GenericStack currentOutput = this.craftingLogic.getFinalJobOutput();
+        if (currentOutput == null || !currentOutput.what().equals(plan.finalOutput().what())) {
+            return false;
+        }
+        return this.parent.getAvailableStorage() >= plan.bytes();
+    }
+
+    @Override
+    public ICraftingSubmitResult mergeJob(IGrid grid, ICraftingPlan plan, IActionSource src) {
+        return this.mergeJob(grid, plan, src, 0);
+    }
+
+    /**
+     * Tops the CPU's reservation up with the merged plan's bytes (taken from the cluster's free capacity) before
+     * handing the merge to the crafting logic, and gives the bytes back if the logic rejects the merge. Without the
+     * top-up the logic's own capacity check would measure against the original reservation and the cluster would
+     * silently over-commit.
+     */
+    @Override
+    public ICraftingSubmitResult mergeJob(IGrid grid, ICraftingPlan plan, IActionSource src, int priority) {
+        if (this.uniqueId == null) {
+            return CraftingSubmitResult.CPU_BUSY;
+        }
+        if (!this.parent.moveFreeCapacity(this, plan.bytes())) {
+            return CraftingSubmitResult.CPU_TOO_SMALL;
+        }
+        ICraftingSubmitResult result = this.craftingLogic.tryMergeJob(grid, plan, src, priority);
+        if (!result.successful()) {
+            this.parent.moveFreeCapacity(this, -plan.bytes());
+        } else {
+            // The cluster's free capacity changed, but the crafting logic only posts item changes, not a CPU change.
+            // Without this event the crafting service keeps listing the stale remaining-capacity CPU object it
+            // registered earlier, so terminals keep showing the pre-merge remaining capacity.
+            this.parent.postCpuChange();
+        }
+        return result;
     }
 
     @Override
@@ -157,6 +229,21 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
         this.parent.updateOutput(stack);
     }
 
+    @Override
+    public CraftingCpuGroup getCpuListGroup() {
+        return new CraftingCpuGroup(this.parent.getCpuListGroupId(), this.listOrdinal);
+    }
+
+    @Override
+    public Icon getUnfocusedCpuListBackgroundIcon() {
+        return QuantumCpuRowIcons.forRow(this.isFirstGroupRow(), this.isLastGroupRow(), false);
+    }
+
+    @Override
+    public Icon getFocusedCpuListBackgroundIcon() {
+        return QuantumCpuRowIcons.forRow(this.isFirstGroupRow(), this.isLastGroupRow(), true);
+    }
+
     public ListCraftingInventory getInventory() {
         return this.craftingLogic.getInventory();
     }
@@ -179,5 +266,29 @@ public class AdvCraftingCPU extends CraftingCPUCluster {
 
     public void markForDeletion() {
         this.markedForDeletion = true;
+    }
+
+    int getListOrdinal() {
+        return this.listOrdinal;
+    }
+
+    void setListOrdinal(int listOrdinal) {
+        this.listOrdinal = listOrdinal;
+    }
+
+    void expandReservation(long delta) {
+        this.bytes = Math.max(0, this.bytes + delta);
+    }
+
+    /**
+     * The remaining-capacity row always closes its cluster's group, and it opens the group too while no job is
+     * running.
+     */
+    private boolean isLastGroupRow() {
+        return this.uniqueId == null;
+    }
+
+    private boolean isFirstGroupRow() {
+        return this.uniqueId == null ? !this.parent.hasActiveCpus() : this.parent.isFirstCpuOrdinal(this.listOrdinal);
     }
 }

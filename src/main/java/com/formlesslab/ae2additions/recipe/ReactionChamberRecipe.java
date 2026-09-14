@@ -1,13 +1,13 @@
 package com.formlesslab.ae2additions.recipe;
 
 import ae2.util.inv.AppEngInternalInventory;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReactionChamberRecipe {
@@ -28,7 +28,7 @@ public class ReactionChamberRecipe {
     }
 
     private static List<ItemStack> copyInputs(AppEngInternalInventory inventory) {
-        List<ItemStack> stacks = new ArrayList<>(inventory.size());
+        List<ItemStack> stacks = new ObjectArrayList<>(inventory.size());
         for (int slot = 0; slot < inventory.size(); slot++) {
             stacks.add(inventory.getStackInSlot(slot).copy());
         }
@@ -130,8 +130,8 @@ public class ReactionChamberRecipe {
 
     public boolean hasItemOutput(ItemStack output) {
         return this.isItemOutput() && output != null && !output.isEmpty()
-                && ItemStack.areItemsEqual(this.itemOutput, output)
-                && ItemStack.areItemStackTagsEqual(this.itemOutput, output);
+            && ItemStack.areItemsEqual(this.itemOutput, output)
+            && ItemStack.areItemStackTagsEqual(this.itemOutput, output);
     }
 
     public boolean hasFluidOutput(FluidStack output) {

@@ -1,15 +1,27 @@
 {
   "variants": {
-    "formed=false,powered=false": {
+    "formed=false,multiblocked=false,powered=false": {
       "model": "ae2additions:quantum_crafting/quantum_structure"
     },
-    "formed=false,powered=true": {
+    "formed=false,multiblocked=false,powered=true": {
       "model": "ae2additions:quantum_crafting/quantum_structure"
     },
-    "formed=true,powered=false": {
+    "formed=false,multiblocked=true,powered=false": {
+      "model": "ae2additions:quantum_crafting/quantum_structure"
+    },
+    "formed=false,multiblocked=true,powered=true": {
+      "model": "ae2additions:quantum_crafting/quantum_structure"
+    },
+    "formed=true,multiblocked=false,powered=false": {
       "model": "ae2additions:quantum_crafting/quantum_structure_formed"
     },
-    "formed=true,powered=true": {
+    "formed=true,multiblocked=false,powered=true": {
+      "model": "ae2additions:quantum_crafting/quantum_structure_formed"
+    },
+    "formed=true,multiblocked=true,powered=false": {
+      "model": "ae2additions:quantum_crafting/quantum_structure_formed"
+    },
+    "formed=true,multiblocked=true,powered=true": {
       "model": "ae2additions:quantum_crafting/quantum_structure_formed"
     }
   }

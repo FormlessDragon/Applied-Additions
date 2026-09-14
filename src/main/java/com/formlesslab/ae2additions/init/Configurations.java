@@ -10,23 +10,24 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 @Config(modid = Tags.MOD_ID, name = Tags.MOD_ID, category = "")
 @Config.LangKey("config.ae2additions")
 @Mod.EventBusSubscriber(modid = Tags.MOD_ID)
+@SuppressWarnings("CanBeFinal")
 public final class Configurations {
 
     @Config.Name("wireless")
     @Config.LangKey("config.ae2additions.wireless")
-    public static final Wireless WIRELESS = new Wireless();
+    public static Wireless WIRELESS = new Wireless();
 
     @Config.Name("quantumComputer")
     @Config.LangKey("config.ae2additions.quantum_computer")
-    public static final QuantumComputer QUANTUM_COMPUTER = new QuantumComputer();
+    public static QuantumComputer QUANTUM_COMPUTER = new QuantumComputer();
 
     @Config.Name("assemblerMatrix")
     @Config.LangKey("config.ae2additions.assembler_matrix")
-    public static final AssemblerMatrix ASSEMBLER_MATRIX = new AssemblerMatrix();
+    public static AssemblerMatrix ASSEMBLER_MATRIX = new AssemblerMatrix();
 
     @Config.Name("client")
     @Config.LangKey("config.ae2additions.client")
-    public static final Client CLIENT = new Client();
+    public static Client CLIENT = new Client();
 
     private Configurations() {
     }
@@ -38,7 +39,7 @@ public final class Configurations {
         }
     }
 
-    public static final class Wireless {
+    public static class Wireless {
         @Config.Name("maxRange")
         @Config.LangKey("config.ae2additions.wireless.max_range")
         @Config.Comment("Maximum wireless connector range in blocks")
@@ -52,7 +53,7 @@ public final class Configurations {
         public double powerMultiplier = 1.0;
     }
 
-    public static final class QuantumComputer {
+    public static class QuantumComputer {
         @Config.Name("maxSize")
         @Config.LangKey("config.ae2additions.quantum_computer.max_size")
         @Config.Comment("Maximum outer dimensions of the Quantum Computer multiblock")
@@ -102,18 +103,12 @@ public final class Configurations {
         public int dataEntanglerMultiplier = 4;
     }
 
-    public static final class AssemblerMatrix {
+    public static class AssemblerMatrix {
         @Config.Name("maxSize")
         @Config.LangKey("config.ae2additions.assembler_matrix.max_size")
         @Config.Comment("Maximum outer dimensions of the Assembler Matrix multiblock")
         @Config.RangeInt(min = 3, max = 16)
         public int maxSize = 7;
-
-        @Config.Name("crafterQueueSize")
-        @Config.LangKey("config.ae2additions.assembler_matrix.crafter_queue_size")
-        @Config.Comment("Queue slots provided by each Assembler Matrix Craft Core")
-        @Config.RangeInt(min = 1, max = 16)
-        public int crafterQueueSize = 8;
 
         @Config.Name("crafterParallelism")
         @Config.LangKey("config.ae2additions.assembler_matrix.crafter_parallelism")
@@ -134,7 +129,7 @@ public final class Configurations {
         public double speedIdlePowerUsage = 1.0;
     }
 
-    public static final class Client {
+    public static class Client {
         @Config.Name("craftingJobSystemNotifications")
         @Config.LangKey("config.ae2additions.client.crafting_job_system_notifications")
         @Config.Comment("Send a system notification when an AE2 crafting job finishes while the game is unfocused")

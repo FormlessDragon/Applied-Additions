@@ -35,14 +35,27 @@ public class BlockAAECraftingUnit extends BlockAAEAbstractCraftingUnit<TileAdvCr
         return this.type == AAECraftingUnitType.QUANTUM_STRUCTURE ? layer == BlockRenderLayer.CUTOUT || layer == BlockRenderLayer.TRANSLUCENT : super.canRenderInLayer(state, layer);
     }
 
+    /**
+     * AdvancedAE marks both the structure shell and the quantum core with noOcclusion: both render models that are
+     * not solid full cubes, so neighbours must keep their faces.
+     */
+    private boolean occludes() {
+        return this.type != AAECraftingUnitType.QUANTUM_STRUCTURE && this.type != AAECraftingUnitType.QUANTUM_CORE;
+    }
+
     @Override
     public boolean isOpaqueCube(IBlockState state) {
-        return this.type != AAECraftingUnitType.QUANTUM_STRUCTURE && super.isOpaqueCube(state);
+        return this.occludes() && super.isOpaqueCube(state);
     }
 
     @Override
     public boolean isFullCube(IBlockState state) {
-        return this.type != AAECraftingUnitType.QUANTUM_STRUCTURE && super.isFullCube(state);
+        return this.occludes() && super.isFullCube(state);
+    }
+
+    @Override
+    public int getLightValue(IBlockState state) {
+        return this.type == AAECraftingUnitType.QUANTUM_CORE && state.getValue(FORMED) && state.getValue(POWERED) ? 12 : 0;
     }
 
     @Override
@@ -67,6 +80,11 @@ public class BlockAAECraftingUnit extends BlockAAEAbstractCraftingUnit<TileAdvCr
         return extended.withProperty(QuantumComputerConnectProperty.INSTANCE, connect);
     }
 
+    /**
+     * Connection rule for the formed shell model, matching AdvancedAE: the structure frame only connects to other
+     * structure blocks. Faces toward internal units keep their glass pane so the units behind stay visible through
+     * it; the internal units draw their own faces toward the shell.
+     */
     private boolean shouldConnectTo(Block block) {
         return block instanceof BlockAAECraftingUnit && ((((BlockAAECraftingUnit) block).type == AAECraftingUnitType.QUANTUM_STRUCTURE) == (this.type == AAECraftingUnitType.QUANTUM_STRUCTURE));
     }

@@ -12,8 +12,8 @@ import stanhebben.zenscript.annotations.Optional;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
-import java.util.ArrayList;
 import java.util.List;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 @ZenRegister
 @ZenClass("mods.ae2additions.ReactionChamber")
@@ -21,7 +21,7 @@ public class ReactionChamber {
 
     @ZenMethod
     public static void addRecipe(IIngredient[] inputItems, ILiquidStack inputFluid, int energy, @Optional IItemStack itemOutput, @Optional ILiquidStack fluidOutput) {
-        List<ReactionChamberRecipe.SizedIngredient> ingredients = new ArrayList<>();
+        List<ReactionChamberRecipe.SizedIngredient> ingredients = new ObjectArrayList<>();
         if (inputItems != null) {
             for (IIngredient input : inputItems) {
                 if (input == null) {

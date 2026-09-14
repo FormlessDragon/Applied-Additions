@@ -16,6 +16,7 @@ import ae2.core.localization.ButtonToolTips;
 import ae2.core.localization.GuiText;
 import com.formlesslab.ae2additions.client.util.QuantumComputerEntry;
 import com.formlesslab.ae2additions.container.ContainerQuantumComputer;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -24,8 +25,7 @@ import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 
-import java.awt.*;
-import java.util.ArrayList;
+import java.awt.Rectangle;
 import java.util.List;
 import java.util.function.IntSupplier;
 
@@ -64,10 +64,6 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         GlStateManager.scale(0.666F, 0.666F, 1.0F);
         Minecraft.getMinecraft().fontRenderer.drawString(text, 0, 0, color);
         GlStateManager.popMatrix();
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 
     private static ITextComponent gray(ITextComponent component) {
@@ -113,7 +109,7 @@ public class AdvCpuSelectionList implements ICompositeWidget {
             return null;
         }
 
-        List<ITextComponent> tooltipLines = new ArrayList<>();
+        List<ITextComponent> tooltipLines = new ObjectArrayList<>();
         tooltipLines.add(getCpuName(cpu));
 
         tooltipLines.add(gray(ButtonToolTips.CpuStatusStorage.text(formatStorage(cpu))));
@@ -161,8 +157,10 @@ public class AdvCpuSelectionList implements ICompositeWidget {
         x += LIST_CONTENT_X;
         y += HEADER_HEIGHT;
 
-        int from = clamp(this.scrollbar.getCurrentScroll(), 0, this.menu.cpuList.cpus().size());
-        int to = clamp(this.scrollbar.getCurrentScroll() + getVisibleRows(), 0, this.menu.cpuList.cpus().size());
+        int value1 = this.scrollbar.getCurrentScroll();
+        int from = Math.clamp(value1, 0, this.menu.cpuList.cpus().size());
+        int value = this.scrollbar.getCurrentScroll() + getVisibleRows();
+        int to = Math.clamp(value, 0, this.menu.cpuList.cpus().size());
         for (QuantumComputerEntry cpu : this.menu.cpuList.cpus().subList(from, to)) {
             if (cpu.serial() == this.menu.getSelectedCpuSerial()) {
                 this.buttonBgSelected.dest(x, y).blit();

@@ -1,0 +1,11 @@
+{
+  "type": "forge:ore_shaped",
+  "pattern": [" A ", "BCB", " D "],
+  "key": {
+    "A": {"item": "ae2:engineering_processor"},
+    "B": {"item": "ae2:quartz_glass"},
+    "C": {"item": "ae2:logic_processor"},
+    "D": {"item": "minecraft:iron_ingot"}
+  },
+  "result": {"item": "ae2additions:export_card"}
+}

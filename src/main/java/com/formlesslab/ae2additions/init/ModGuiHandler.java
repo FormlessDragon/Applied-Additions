@@ -12,6 +12,8 @@ import com.formlesslab.ae2additions.container.ContainerQuantumComputer;
 import com.formlesslab.ae2additions.container.ContainerReactionChamber;
 import com.formlesslab.ae2additions.container.ContainerWirelessConnector;
 import com.formlesslab.ae2additions.container.ContainerWirelessHub;
+import com.formlesslab.ae2additions.container.ContainerImportExportCard;
+import com.formlesslab.ae2additions.client.gui.GuiImportExportCard;
 import com.formlesslab.ae2additions.tile.TileAdvCraftingBlock;
 import com.formlesslab.ae2additions.tile.TileAssemblerMatrixBase;
 import com.formlesslab.ae2additions.tile.TileReactionChamber;
@@ -33,6 +35,7 @@ public class ModGuiHandler implements IGuiHandler {
     public static final int QUANTUM_COMPUTER = 2;
     public static final int ASSEMBLER_MATRIX = 3;
     public static final int REACTION_CHAMBER = 4;
+    public static final int IMPORT_EXPORT_CARD = 5;
 
     private static final Int2ObjectMap<GuiRegistration<?>> REGISTRATIONS = new Int2ObjectLinkedOpenHashMap<>();
     private static boolean clientRegistrationsInitialized;
@@ -94,6 +97,9 @@ public class ModGuiHandler implements IGuiHandler {
 
     @Override
     public Object getServerGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
+        if (id == IMPORT_EXPORT_CARD) {
+            return new ContainerImportExportCard(player.inventory, x, y, z != 0);
+        }
         BlockPos pos = new BlockPos(x, y, z);
         TileEntity tile = world.getTileEntity(pos);
         GuiRegistration<?> registration = REGISTRATIONS.get(id);
@@ -103,6 +109,10 @@ public class ModGuiHandler implements IGuiHandler {
     @Override
     @SideOnly(Side.CLIENT)
     public Object getClientGuiElement(int id, EntityPlayer player, World world, int x, int y, int z) {
+        if (id == IMPORT_EXPORT_CARD) {
+            ContainerImportExportCard container = new ContainerImportExportCard(player.inventory, x, y, z != 0);
+            return GuiImportExportCard.create(container, player.inventory);
+        }
         ensureClientRegistrations();
         BlockPos pos = new BlockPos(x, y, z);
         TileEntity tile = world.getTileEntity(pos);

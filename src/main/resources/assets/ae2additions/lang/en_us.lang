@@ -32,6 +32,8 @@ item.ae2additions.assembler_matrix_glass.name=Assembler Matrix Glass
 item.ae2additions.assembler_matrix_pattern.name=Assembler Matrix Pattern Core
 item.ae2additions.assembler_matrix_crafter.name=Assembler Matrix Craft Core
 item.ae2additions.assembler_matrix_speed.name=Assembler Matrix Speed Core
+item.ae2additions.import_card.name=Import Card
+item.ae2additions.export_card.name=Export Card
 
 tooltip.ae2additions.quantum_unit.01=Interior filler block for Quantum Computers.
 tooltip.ae2additions.quantum_unit.02=Provides no extra storage or parallelism.
@@ -99,6 +101,11 @@ gui.ae2additions.status.remote_error=Remote Error
 gui.ae2additions.status.remote_error.desc=The bound connector is missing or not working.
 gui.ae2additions.status.no_power=No Power
 gui.ae2additions.status.no_power.desc=This Wireless Connector needs more power.
+gui.ae2additions.card.mass_select.inventory=Configure all main inventory slots
+gui.ae2additions.card.mass_select.hotbar=Configure all hotbar slots
+gui.ae2additions.card.mass_select.export=Left-click: cycle each slot's filter number
+gui.ae2additions.card.mass_select.import=Left-click: toggle each slot
+gui.ae2additions.card.mass_select.clear=Right-click: clear all slots in this group
 
 chat.ae2additions.highlight=Remote block: %s, %s, %s
 wireless.tooltip=Bound to %s, %s, %s

@@ -1,0 +1,41 @@
+{
+  "$schema": "schema.json",
+  "includes": ["common/common.json", "common/player_inventory.json"],
+  "background": {
+    "texture": "ae2additions:textures/guis/upgrade_2.png",
+    "srcRect": [0, 0, 191, 199]
+  },
+  "slots": {
+    "AE2ADDITIONS_CARD_CONFIG": {
+      "left": 23,
+      "top": 29,
+      "grid": "BREAK_AFTER_9COLS"
+    },
+    "PLAYER_INVENTORY": {
+      "left": 23,
+      "bottom": 84,
+      "grid": "BREAK_AFTER_9COLS"
+    },
+    "PLAYER_HOTBAR": {
+      "left": 23,
+      "bottom": 26,
+      "grid": "HORIZONTAL"
+    }
+  },
+  "widgets": {
+    "upgrades": { "left": 191, "top": 0, "height": 90 },
+    "verticalToolbar": { "left": 18, "top": 1 },
+    "back": { "left": 167, "top": -5, "width": 20, "height": 20 }
+  },
+  "text": {
+    "dialog_title": {
+      "text": { "translate": "item.ae2additions.export_card.name" },
+      "position": { "left": 23, "top": 6 }
+    },
+    "player_inventory_title": {
+      "text": { "translate": "container.inventory" },
+      "position": { "left": 23, "bottom": 95 }
+    }
+  }
+}
+

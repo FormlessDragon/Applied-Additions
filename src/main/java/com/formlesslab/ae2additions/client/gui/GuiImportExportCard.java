@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.ITextComponent;
@@ -147,7 +148,7 @@ public final class GuiImportExportCard extends AEBaseGui<ContainerImportExportCa
         super.drawScreen(mouseX, mouseY, partialTicks);
         int group = findMassSelectGroup(mouseX, mouseY);
         if (group >= 0) {
-            drawTooltipLines(mouseX, mouseY, List.of(
+            drawTooltipLines(ItemStack.EMPTY, mouseX, mouseY, List.of(
                     I18n.format("gui.ae2additions.card.mass_select." + (group == 0 ? "inventory" : "hotbar")),
                     I18n.format("gui.ae2additions.card.mass_select." + (this.container.export ? "export" : "import")),
                     I18n.format("gui.ae2additions.card.mass_select.clear")));

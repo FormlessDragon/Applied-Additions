@@ -41,7 +41,7 @@ dependencies {
         compileOnly "com.cleanroommc:lwjglx:1.0.0"
     }
 
-    modImplementation "com.github.FormlessDragon:Applied-Energistics-2-Supergiant:v1.0.14"
+    modImplementation "com.github.FormlessDragon:Applied-Energistics-2-Supergiant:v1.1.0"
     modImplementation "curse.maven:had-enough-items-557549:7938914"
     modCompileOnly 'curse.maven:mouse-tweaks-unofficial-461660:5876158'
     modCompileOnly "curse.maven:baubles-227083:2518667"

@@ -29,6 +29,8 @@ import ae2.util.ConfigInventory;
 import com.formlesslab.ae2additions.init.ModContent;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemArmor;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.FluidStack;
@@ -197,6 +199,10 @@ public final class ImportExportCardHandler {
                 break;
             }
         }
+        if (isArmorSlot(inventorySlot)
+                && (!(exportKey instanceof AEItemKey itemKey) || !isValidArmorForSlot(itemKey.toStack(1), inventorySlot))) {
+            return;
+        }
         if (exportKey instanceof AEFluidKey) {
             exportFluid(player, grid, energy, source, stack, (AEFluidKey) exportKey, upgrades);
             return;
@@ -228,6 +234,24 @@ public final class ImportExportCardHandler {
         if (extracted > 0) {
             stack.grow((int) extracted);
         }
+    }
+
+    private static boolean isArmorSlot(int inventorySlot) {
+        return inventorySlot >= 36 && inventorySlot <= 39;
+    }
+
+    private static boolean isValidArmorForSlot(ItemStack stack, int inventorySlot) {
+        if (!(stack.getItem() instanceof ItemArmor armor)) {
+            return false;
+        }
+        EntityEquipmentSlot expectedSlot = switch (inventorySlot) {
+            case 36 -> EntityEquipmentSlot.FEET;
+            case 37 -> EntityEquipmentSlot.LEGS;
+            case 38 -> EntityEquipmentSlot.CHEST;
+            case 39 -> EntityEquipmentSlot.HEAD;
+            default -> null;
+        };
+        return armor.armorType == expectedSlot;
     }
 
     private static long extractOrRequestCrafting(EntityPlayerMP player, IGrid grid, IEnergySource energy, IActionSource source, AEKey key, long amount, IUpgradeInventory upgrades) {

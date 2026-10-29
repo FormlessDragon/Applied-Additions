@@ -42,7 +42,7 @@ dependencies {
     }
 
     modImplementation "com.github.FormlessDragon:Applied-Energistics-2-Supergiant:v1.1.0"
-    modImplementation "curse.maven:had-enough-items-557549:7938914"
+    modImplementation "curse.maven:had-enough-items-557549:9093136"
     modCompileOnly 'curse.maven:mouse-tweaks-unofficial-461660:5876158'
     modCompileOnly "curse.maven:baubles-227083:2518667"
     compileOnly 'CraftTweaker2:CraftTweaker2-MC1120-Main:1.12-4.1.20.711'

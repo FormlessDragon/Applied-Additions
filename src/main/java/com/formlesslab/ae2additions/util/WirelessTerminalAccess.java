@@ -8,9 +8,6 @@ import ae2.items.tools.powered.WirelessTerminalItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
-
-import java.util.function.Consumer;
 
 public final class WirelessTerminalAccess {
 
@@ -32,27 +29,20 @@ public final class WirelessTerminalAccess {
         if (!isWirelessTerminal(stack)) {
             return null;
         }
-        try {
-            Object result = stack.getItem().getClass()
-                    .getMethod("getUpgrades", ItemStack.class)
-                    .invoke(stack.getItem(), stack);
-            return result instanceof IUpgradeInventory ? (IUpgradeInventory) result : null;
-        } catch (ReflectiveOperationException ignored) {
-            return null;
+        var item = stack.getItem();
+        if (item instanceof WirelessTerminalItem terminal) {
+            return terminal.getUpgrades(stack);
         }
+        return null;
     }
 
     public static IGrid getLinkedGrid(ItemStack stack, EntityPlayerMP player) {
         if (!isWirelessTerminal(stack)) {
             return null;
         }
-        try {
-            Object result = stack.getItem().getClass().getMethod("getLinkedGrid", ItemStack.class,
-                    World.class, Consumer.class)
-                    .invoke(stack.getItem(), stack, player.world, null);
-            return result instanceof IGrid ? (IGrid) result : null;
-        } catch (ReflectiveOperationException ignored) {
-            return null;
+        if (stack.getItem() instanceof WirelessTerminalItem terminal) {
+            return terminal.getLinkedGrid(stack, player.world, null);
         }
+        return null;
     }
 }

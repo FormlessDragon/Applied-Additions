@@ -120,7 +120,8 @@ public class GuiAssemblerMatrix<T extends AEBaseContainer & AssemblerMatrixMenu>
         this.refreshVisibleSlots();
         super.drawScreen(mouseX, mouseY, partialTicks);
         if (isMouseOverQueueText(mouseX - this.guiLeft, mouseY - this.guiTop)) {
-            this.drawTooltipLines(mouseX, mouseY, Collections.singletonList(I18n.format("gui.ae2additions.assembler_matrix.queued_jobs", this.queuedJobs)));
+            this.drawTooltipLines(ItemStack.EMPTY, mouseX, mouseY,
+                    Collections.singletonList(I18n.format("gui.ae2additions.assembler_matrix.queued_jobs", this.queuedJobs)));
         }
     }
 

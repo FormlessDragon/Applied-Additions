@@ -4,6 +4,9 @@ import com.formlesslab.ae2additions.Tags;
 import com.formlesslab.ae2additions.network.CAssemblerMatrixCancel;
 import com.formlesslab.ae2additions.network.CAssemblerMatrixPatternMode;
 import com.formlesslab.ae2additions.network.CReactionChamberOutputSides;
+import com.formlesslab.ae2additions.network.CCardConfig;
+import com.formlesslab.ae2additions.network.COpenImportExportCard;
+import com.formlesslab.ae2additions.network.CCloseImportExportCard;
 import com.formlesslab.ae2additions.network.SAssemblerMatrixUpdate;
 import com.formlesslab.ae2additions.network.base.ModClientboundPacket;
 import com.formlesslab.ae2additions.network.base.ModServerboundPacket;
@@ -21,6 +24,9 @@ public final class ModNetworks {
     public static final int ASSEMBLER_MATRIX_CANCEL = 3;
     public static final int ASSEMBLER_MATRIX_PATTERN_MODE = 4;
     public static final int REACTION_CHAMBER_OUTPUT_SIDES = 5;
+    public static final int OPEN_IMPORT_EXPORT_CARD = 6;
+    public static final int IMPORT_EXPORT_CARD_CONFIG = 7;
+    public static final int CLOSE_IMPORT_EXPORT_CARD = 8;
 
     private static boolean initialized;
 
@@ -39,6 +45,9 @@ public final class ModNetworks {
         registerServerbound(ASSEMBLER_MATRIX_CANCEL, CAssemblerMatrixCancel.class);
         registerServerbound(ASSEMBLER_MATRIX_PATTERN_MODE, CAssemblerMatrixPatternMode.class);
         registerServerbound(REACTION_CHAMBER_OUTPUT_SIDES, CReactionChamberOutputSides.class);
+        registerServerbound(OPEN_IMPORT_EXPORT_CARD, COpenImportExportCard.class);
+        registerServerbound(IMPORT_EXPORT_CARD_CONFIG, CCardConfig.class);
+        registerServerbound(CLOSE_IMPORT_EXPORT_CARD, CCloseImportExportCard.class);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

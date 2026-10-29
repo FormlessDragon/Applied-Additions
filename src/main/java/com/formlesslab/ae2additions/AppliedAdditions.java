@@ -9,6 +9,8 @@ import com.formlesslab.ae2additions.client.render.WirelessHighlightHandler;
 import com.formlesslab.ae2additions.init.ModContent;
 import com.formlesslab.ae2additions.init.ModGuiHandler;
 import com.formlesslab.ae2additions.init.ModNetworks;
+import com.formlesslab.ae2additions.util.ImportExportCardHandler;
+import com.formlesslab.ae2additions.client.ImportExportGuiHooks;
 import com.formlesslab.ae2additions.me.cluster.QuantumCpuRowIcons;
 import com.formlesslab.ae2additions.me.service.QuantumCpuMaintenanceService;
 import net.minecraftforge.common.MinecraftForge;
@@ -39,6 +41,7 @@ public class AppliedAdditions {
         ModContent.registerTileEntities();
         InfinityCellInventory.registerHandler();
         ModNetworks.init();
+        MinecraftForge.EVENT_BUS.register(ImportExportCardHandler.class);
         NetworkRegistry.INSTANCE.registerGuiHandler(this, new ModGuiHandler());
         GridServices.register(QuantumCpuMaintenanceService.class, QuantumCpuMaintenanceService.class);
         QuantumCpuRowIcons.bootstrap();
@@ -47,6 +50,7 @@ public class AppliedAdditions {
             MinecraftForge.EVENT_BUS.register(QuantumComputerModelOverride.INSTANCE);
             MinecraftForge.EVENT_BUS.register(WirelessHighlightHandler.INSTANCE);
             MinecraftForge.EVENT_BUS.register(CraftingJobNotificationHandler.INSTANCE);
+            MinecraftForge.EVENT_BUS.register(ImportExportGuiHooks.class);
         }
         LOGGER.info("{} initialized", Tags.MOD_NAME);
     }

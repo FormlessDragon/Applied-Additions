@@ -99,6 +99,11 @@ gui.ae2additions.status.remote_error=远端错误
 gui.ae2additions.status.remote_error.desc=绑定的连接器丢失或无法工作。
 gui.ae2additions.status.no_power=无能源
 gui.ae2additions.status.no_power.desc=此无线连接器需要更多能源。
+gui.ae2additions.card.mass_select.inventory=批量设置主物品栏槽位
+gui.ae2additions.card.mass_select.hotbar=批量设置快捷栏槽位
+gui.ae2additions.card.mass_select.export=左键：逐槽切换过滤器编号
+gui.ae2additions.card.mass_select.import=左键：切换各槽位的启用状态
+gui.ae2additions.card.mass_select.clear=右键：清空这组槽位的设置
 
 chat.ae2additions.highlight=远端方块：%s, %s, %s
 wireless.tooltip=已绑定到 %s, %s, %s
@@ -135,6 +140,9 @@ item.ae2additions.quantum_alloy_block.name=量子合金块
 item.ae2additions.quantum_alloy_slab.name=量子合金台阶
 item.ae2additions.quantum_alloy_stairs.name=量子合金楼梯
 item.ae2additions.quantum_alloy_wall.name=量子合金墙
+item.ae2additions.import_card.name=输入卡
+item.ae2additions.export_card.name=输出卡
+
 fluid.quantum_infusion=量子灌注液
 fluid.ae2additions.quantum_infusion=量子灌注液
 gui.ae2additions.reaction_chamber=反应仓

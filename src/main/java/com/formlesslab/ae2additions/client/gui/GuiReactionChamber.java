@@ -16,6 +16,7 @@ import com.formlesslab.ae2additions.tile.TileReactionChamber;
 import com.formlesslab.ae2additions.util.FluidStackRenderer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -99,7 +100,7 @@ public class GuiReactionChamber extends GuiUpgradeable<ContainerReactionChamber>
         List<String> tooltip = new ObjectArrayList<>();
         tooltip.add(fluid.getFluid().getLocalizedName(new FluidStack(fluid.getFluid(), 1)));
         tooltip.add(TextFormatting.GRAY + "" + amount + " / " + TileReactionChamber.TANK_CAPACITY + " mB");
-        this.drawTooltipLines(mouseX, mouseY, tooltip);
+        this.drawTooltipLines(ItemStack.EMPTY, mouseX, mouseY, tooltip);
         return true;
     }
 }

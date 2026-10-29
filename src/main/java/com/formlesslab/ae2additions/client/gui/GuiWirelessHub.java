@@ -17,6 +17,7 @@ import com.formlesslab.ae2additions.util.RemoteBlockRenderer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -92,7 +93,7 @@ public class GuiWirelessHub extends GuiUpgradeable<ContainerWirelessHub> {
         super.drawScreen(mouseX, mouseY, partialTicks);
         int port = hoveredPort(mouseX - this.guiLeft, mouseY - this.guiTop);
         if (port >= 0) {
-            drawTooltipLines(mouseX, mouseY, tooltipForPort(port));
+            drawTooltipLines(ItemStack.EMPTY, mouseX, mouseY, tooltipForPort(port));
         }
     }
 

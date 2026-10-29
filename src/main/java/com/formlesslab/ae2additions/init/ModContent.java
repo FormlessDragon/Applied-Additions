@@ -84,6 +84,8 @@ public final class ModContent {
     public static final BlockWirelessHub WIRELESS_HUB;
     public static final ItemWirelessTool WIRELESS_TOOL;
     public static final ItemWirelessConnectorUpgrade WIRELESS_CONNECTOR_UPGRADE;
+    public static final Item IMPORT_CARD;
+    public static final Item EXPORT_CARD;
     public static final Item SHATTERED_SINGULARITY;
     public static final Item QUANTUM_PROCESSOR_PRESS;
     public static final Item PRINTED_QUANTUM_PROCESSOR;
@@ -127,6 +129,8 @@ public final class ModContent {
         WIRELESS_HUB = new BlockWirelessHub();
         WIRELESS_TOOL = new ItemWirelessTool();
         WIRELESS_CONNECTOR_UPGRADE = new ItemWirelessConnectorUpgrade();
+        IMPORT_CARD = Upgrades.createUpgradeCardItem();
+        EXPORT_CARD = Upgrades.createUpgradeCardItem();
         SHATTERED_SINGULARITY = new Item();
         QUANTUM_PROCESSOR_PRESS = new Item();
         PRINTED_QUANTUM_PROCESSOR = new Item();
@@ -157,6 +161,8 @@ public final class ModContent {
 
         registerItem(WIRELESS_TOOL, "wireless_tool");
         registerItem(WIRELESS_CONNECTOR_UPGRADE, "wireless_connector_upgrade");
+        registerItem(IMPORT_CARD, "import_card");
+        registerItem(EXPORT_CARD, "export_card");
         registerItem(QUANTUM_PROCESSOR_PRESS, "quantum_processor_press");
         registerItem(PRINTED_QUANTUM_PROCESSOR, "printed_quantum_processor");
         registerItem(QUANTUM_PROCESSOR, "quantum_processor");
@@ -212,6 +218,17 @@ public final class ModContent {
         Upgrades.add(AEItems.ENERGY_CARD.item(), Item.getItemFromBlock(ModContent.WIRELESS_HUB), 4);
         Upgrades.add(AEItems.SPEED_CARD.item(), Item.getItemFromBlock(ModContent.REACTION_CHAMBER), 4);
         Upgrades.add(AEItems.PARALLEL_CARD.item(), Item.getItemFromBlock(ModContent.REACTION_CHAMBER), 3);
+        Upgrades.add(IMPORT_CARD, AEItems.WIRELESS_TERMINAL.item(), 1);
+        Upgrades.add(EXPORT_CARD, AEItems.WIRELESS_TERMINAL.item(), 1);
+        Upgrades.add(IMPORT_CARD, AEItems.WIRELESS_CRAFTING_TERMINAL.item(), 1);
+        Upgrades.add(EXPORT_CARD, AEItems.WIRELESS_CRAFTING_TERMINAL.item(), 1);
+        Upgrades.add(AEItems.CAPACITY_CARD.item(), IMPORT_CARD, 3);
+        Upgrades.add(AEItems.CAPACITY_CARD.item(), EXPORT_CARD, 3);
+        Upgrades.add(AEItems.FUZZY_CARD.item(), IMPORT_CARD, 1);
+        Upgrades.add(AEItems.FUZZY_CARD.item(), EXPORT_CARD, 1);
+        Upgrades.add(AEItems.INVERTER_CARD.item(), IMPORT_CARD, 1);
+        Upgrades.add(AEItems.CRAFTING_CARD.item(), EXPORT_CARD, 1);
+        Upgrades.add(AEItems.SPEED_CARD.item(), EXPORT_CARD, 1);
     }
 
     public static void registerOreDictionary() {

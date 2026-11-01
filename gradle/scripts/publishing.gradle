@@ -1,4 +1,3 @@
-import groovy.util.Node
 import groovy.xml.XmlSlurper
 
 apply from: 'gradle/scripts/helpers.gradle'
@@ -7,7 +6,6 @@ private static boolean isPomNodeNamed(Object node, String localName) {
     if (!(node instanceof Node)) {
         return false
     }
-
     def nodeName = node.name().toString()
     return nodeName == localName
             || nodeName.endsWith("}" + localName)
@@ -33,15 +31,22 @@ setDefaultProperty('jitpack_group', false, '')
 setDefaultProperty('jitpack_artifact_id', false, '')
 setDefaultProperty('jitpack_version', false, '')
 
-def publishMainJarTask = propertyBool('enable_shadow') ? 'remapShadowJar' : 'remapJar'
+def publishMainJarTask = propertyBool('enable_shadow') ? 'reobfShadowJar' : 'reobfJar'
 
 def configureMavenJavaPublication = { MavenPublication publication, String groupId, String artifactId, String publicationVersion ->
     def scmUrl = propertyString('maven_scm_url')
     def scmConnectionUrl = scmUrl.endsWith('.git') ? scmUrl : "${scmUrl}.git"
 
     publication.from components.java
-    publication.artifact(tasks.named(publishMainJarTask)) {
-        classifier = null
+    // ModDevGradle inherits the development classifier on `reobfJar`; publish the remapped
+    // jar as the main artifact so consumers can resolve the mod without a classifier.
+    // The development jar stays available under the `dev` classifier.
+    publication.setArtifacts([tasks.named(publishMainJarTask), tasks.named('jar')])
+    if (propertyBool('generate_sources_jar')) {
+        publication.artifact(tasks.named('sourcesJar'))
+    }
+    if (propertyBool('generate_javadocs_jar')) {
+        publication.artifact(tasks.named('javadocJar'))
     }
     publication.setGroupId(groupId)
     publication.setArtifactId(artifactId)
@@ -70,8 +75,7 @@ def configureMavenJavaPublication = { MavenPublication publication, String group
         }
     }
     publication.pom.withXml {
-        Node pomNode = it.asNode()
-        removePomChildren(pomNode, 'dependencies')
+        removePomChildren(it.asNode(), 'dependencies')
     }
 }
 
@@ -107,27 +111,19 @@ if (propertyBool('publish_to_maven')) {
 
     def verifyMavenPomHasNoDependencies = tasks.register('verifyMavenPomHasNoDependencies') {
         def generatedPom = layout.buildDirectory.file('publications/mavenJava/pom-default.xml')
-
         dependsOn tasks.named('generatePomFileForMavenJavaPublication')
         inputs.file(generatedPom)
-
         doLast {
-            def pomFile = generatedPom.get().asFile
-            def pom = new XmlSlurper(false, false).parse(pomFile)
+            def pom = new XmlSlurper(false, false).parse(generatedPom.get().asFile)
             def dependenciesNode = pom.dependencies
             if (dependenciesNode.size() > 0) {
-                def dependencies = dependenciesNode.dependency
-                def dependencyNames = dependencies.collect { dependency ->
+                def dependencies = dependenciesNode.dependency.collect { dependency ->
                     "${dependency.groupId.text()}:${dependency.artifactId.text()}:${dependency.version.text()}"
                 }.join(', ')
-                if (dependencyNames.isEmpty()) {
-                    throw new GradleException('Maven publication POM must not contain a dependencies section.')
-                }
-                throw new GradleException("Maven publication POM must not contain a dependencies section, but found: ${dependencyNames}")
+                throw new GradleException("Maven publication POM must not contain dependencies section: ${dependencies}")
             }
         }
     }
-
     tasks.matching { task ->
         task.name == 'publishMavenJavaPublicationToMavenLocal'
                 || task.name.startsWith('publishMavenJavaPublicationTo')
@@ -158,30 +154,16 @@ if (propertyBool('publish_to_jitpack')) {
 
     def verifyJitpackMavenPomHasNoDependencies = tasks.register('verifyJitpackMavenPomHasNoDependencies') {
         def generatedPom = layout.buildDirectory.file('publications/mavenJava/pom-default.xml')
-
         dependsOn tasks.named('generatePomFileForMavenJavaPublication')
         inputs.file(generatedPom)
-
         doLast {
-            def pomFile = generatedPom.get().asFile
-            def pom = new XmlSlurper(false, false).parse(pomFile)
-            def dependenciesNode = pom.dependencies
-            if (dependenciesNode.size() > 0) {
-                def dependencies = dependenciesNode.dependency
-                def dependencyNames = dependencies.collect { dependency ->
-                    "${dependency.groupId.text()}:${dependency.artifactId.text()}:${dependency.version.text()}"
-                }.join(', ')
-                if (dependencyNames.isEmpty()) {
-                    throw new GradleException('JitPack Maven publication POM must not contain a dependencies section.')
-                }
-                throw new GradleException("JitPack Maven publication POM must not contain a dependencies section, but found: ${dependencyNames}")
+            def pom = new XmlSlurper(false, false).parse(generatedPom.get().asFile)
+            if (pom.dependencies.size() > 0) {
+                throw new GradleException('JitPack Maven publication POM must not contain a dependencies section.')
             }
         }
     }
-
-    tasks.matching { task ->
-        task.name == 'publishMavenJavaPublicationToJitpackRepository'
-    }.configureEach {
+    tasks.named('publishMavenJavaPublicationToJitpackRepository').configure {
         dependsOn verifyJitpackMavenPomHasNoDependencies
     }
 }

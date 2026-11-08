@@ -5,13 +5,12 @@ repositories {
         dirs('libs') // /libs
     }
     maven {
-        name = 'CleanroomMC'
-        url = 'https://maven.cleanroommc.com'
-    }
-    maven {
         // Hosts the Cleanroom companion libraries (lwjglx, cleanmix, ...).
         name = 'Outlands'
         url = 'https://maven.outlands.top/releases'
+        content {
+            includeGroup 'com.cleanroommc'
+        }
     }
     maven {
         name = 'CurseMaven'
@@ -37,10 +36,16 @@ repositories {
     maven {
         name = 'BlameJared'
         url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'CraftTweaker2'
+        }
     }
     maven {
         name = 'Jitpack'
         url = 'https://jitpack.io'
+        content {
+            includeGroupByRegex "com\\.github\\..*"
+        }
     }
     mavenCentral()
     mavenLocal() // Must be last for caching to work

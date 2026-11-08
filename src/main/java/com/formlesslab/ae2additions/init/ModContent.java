@@ -239,7 +239,7 @@ public final class ModContent {
     }
 
     public static void registerMachineRecipes() {
-        AERecipeTypes.INSCRIBER.register(new InscriberRecipe(Ingredient.fromStacks(new ItemStack(SHATTERED_SINGULARITY)), new ItemStack(QUANTUM_INFUSED_DUST), Ingredient.EMPTY, Ingredient.EMPTY, InscriberProcessType.PRESS));
+        AERecipeTypes.INSCRIBER.register(new InscriberRecipe(Ingredient.fromStacks(new ItemStack(SHATTERED_SINGULARITY)), new ItemStack(QUANTUM_INFUSED_DUST), Ingredient.EMPTY, Ingredient.EMPTY, InscriberProcessType.INSCRIBE));
         AERecipeTypes.INSCRIBER.register(new InscriberRecipe(Ingredient.fromStacks(new ItemStack(SHATTERED_SINGULARITY)), new ItemStack(QUANTUM_PROCESSOR_PRESS), Ingredient.fromStacks(AEItems.ENGINEERING_PROCESSOR_PRESS.stack()), Ingredient.fromStacks(AEItems.LOGIC_PROCESSOR_PRESS.stack()), InscriberProcessType.PRESS));
         AERecipeTypes.INSCRIBER.register(new InscriberRecipe(Ingredient.fromStacks(new ItemStack(Blocks.IRON_BLOCK)), new ItemStack(QUANTUM_PROCESSOR_PRESS), Ingredient.fromStacks(new ItemStack(QUANTUM_PROCESSOR_PRESS)), Ingredient.EMPTY, InscriberProcessType.INSCRIBE));
         AERecipeTypes.INSCRIBER.register(new InscriberRecipe(Ingredient.fromStacks(new ItemStack(QUANTUM_ALLOY)), new ItemStack(PRINTED_QUANTUM_PROCESSOR), Ingredient.fromStacks(new ItemStack(QUANTUM_PROCESSOR_PRESS)), Ingredient.EMPTY, InscriberProcessType.INSCRIBE));
